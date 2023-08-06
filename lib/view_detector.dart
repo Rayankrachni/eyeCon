@@ -44,7 +44,8 @@ class _DetectorViewState extends State<DetectorView> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) 
+  {
     return  CameraView(
             customPaint: widget.customPaint,
             onImage: widget.onImage,

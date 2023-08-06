@@ -1,131 +1,146 @@
-import 'dart:math';
-
 import 'package:camera/camera.dart';
 import 'package:eyedetector/cordinator.dart';
+import 'dart:math' as math; 
+import 'package:eyedetector/helpers/sharedPre.dart';
+import 'package:eyedetector/helpers/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
-
 class FaceDetectorPainter extends CustomPainter {
   FaceDetectorPainter(
     this.faces,
     this.imageSize,
     this.rotation,
     this.cameraLensDirection,
+    this.context,
   );
 
   final List<Face> faces;
   final Size imageSize;
+
+  final BuildContext context;
   final InputImageRotation rotation;
   final CameraLensDirection cameraLensDirection;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final Paint paint1 = Paint()
+    final Paint facePaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0
+      ..strokeWidth = 2.0
       ..color = Colors.red;
-    final Paint paint2 = Paint()
+
+    final Paint leftEyePaint = Paint()
       ..style = PaintingStyle.fill
-      ..strokeWidth = 1.0
       ..color = Colors.green;
 
-    for (final Face face in faces) {
-      final left = translateX(
-        face.boundingBox.left,
-        size,
-        imageSize,
-        rotation,
-        cameraLensDirection,
-      );
-      final top = translateY(
-        face.boundingBox.top,
-        size,
-        imageSize,
-        rotation,
-        cameraLensDirection,
-      );
-      final right = translateX(
-        face.boundingBox.right,
-        size,
-        imageSize,
-        rotation,
-        cameraLensDirection,
-      );
-      final bottom = translateY(
-        face.boundingBox.bottom,
-        size,
-        imageSize,
-        rotation,
-        cameraLensDirection,
-      );
+    final Paint rightEyePaint = Paint()
+      ..style = PaintingStyle.fill
+      ..color = Colors.blue;
 
-      canvas.drawRect(
-        Rect.fromLTRB(left, top, right, bottom),
-        paint1,
-      );
+         final Paint eyeBoxPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..color = Colors.red;
 
-      void paintContour(FaceContourType type) {
-        final contour = face.contours[type];
-        if (contour?.points != null) {
-          for (final Point point in contour!.points) {
-            canvas.drawCircle(
-                Offset(
-                  translateX(
-                    point.x.toDouble(),
-                    size,
-                    imageSize,
-                    rotation,
-                    cameraLensDirection,
-                  ),
-                  translateY(
-                    point.y.toDouble(),
-                    size,
-                    imageSize,
-                    rotation,
-                    cameraLensDirection,
-                  ),
-                ),
-                1,
-                paint1);
+    for (final Face face in faces) 
+    {
+      double leftEyeLeft = double.infinity;
+      double leftEyeTop = double.infinity;
+      double leftEyeRight = double.negativeInfinity;
+      double leftEyeBottom = double.negativeInfinity;
+
+      double rightEyeLeft = double.infinity;
+      double rightEyeTop = double.infinity;
+      double rightEyeRight = double.negativeInfinity;
+      double rightEyeBottom = double.negativeInfinity;
+
+        for (final landmark in face.landmarks.values) {
+        if (landmark != null && (landmark.type == FaceLandmarkType.leftEye || landmark.type == FaceLandmarkType.rightEye)) {
+          final Offset eyePosition = Offset(
+            translateX(
+              landmark.position.x.toDouble(),
+              size,
+              imageSize,
+              rotation,
+              cameraLensDirection,
+            ),
+            translateY(
+              landmark.position.y.toDouble(),
+              size,
+              imageSize,
+              rotation,
+              cameraLensDirection,
+            ),
+          );
+
+          if (landmark.type == FaceLandmarkType.leftEye) {
+            leftEyeLeft = math.min(leftEyeLeft, eyePosition.dx);
+            leftEyeTop = math.min(leftEyeTop, eyePosition.dy);
+            leftEyeRight = math.max(leftEyeRight, eyePosition.dx);
+            leftEyeBottom = math.max(leftEyeBottom, eyePosition.dy);
+          } else if (landmark.type == FaceLandmarkType.rightEye) {
+            rightEyeLeft = math.min(rightEyeLeft, eyePosition.dx);
+            rightEyeTop = math.min(rightEyeTop, eyePosition.dy);
+            rightEyeRight = math.max(rightEyeRight, eyePosition.dx);
+            rightEyeBottom = math.max(rightEyeBottom, eyePosition.dy);
           }
         }
       }
+    // Draw bounding box for the eyes
+ if (leftEyeLeft != double.infinity && leftEyeTop != double.infinity && rightEyeRight != double.negativeInfinity && rightEyeBottom != double.negativeInfinity) {
+        final double boxHeight = (rightEyeBottom - leftEyeTop) * 3; // Increase the height factor as needed
+        final Rect eyesBoundingBox = Rect.fromLTRB(
+          leftEyeLeft,
+          leftEyeTop - boxHeight,
+          rightEyeRight,
+          rightEyeBottom,
+        );
 
-      void paintLandmark(FaceLandmarkType type) {
-        final landmark = face.landmarks[type];
-        if (landmark?.position != null) {
-          canvas.drawCircle(
-              Offset(
-                translateX(
-                  landmark!.position.x.toDouble(),
-                  size,
-                  imageSize,
-                  rotation,
-                  cameraLensDirection,
-                ),
-                translateY(
-                  landmark.position.y.toDouble(),
-                  size,
-                  imageSize,
-                  rotation,
-                  cameraLensDirection,
-                ),
-              ),
-              2,
-              paint2);
+        canvas.drawRect(eyesBoundingBox, eyeBoxPaint);
+      }
+
+      void paintEye(FaceLandmark landmark, Paint paint) {
+        if (landmark.position != null) {
+          final double eyeRadius = 6.0;
+          final Offset eyeCenter = Offset(
+            translateX(
+              landmark.position.x.toDouble(),
+              size,
+              imageSize,
+              rotation,
+              cameraLensDirection,
+            ),
+            translateY(
+              landmark.position.y.toDouble(),
+              size,
+              imageSize,
+              rotation,
+              cameraLensDirection,
+            ),
+          );
+
+          // Draw bounding box for the eyes
+          canvas.drawCircle(eyeCenter, eyeRadius, paint);
         }
       }
 
-      for (final type in FaceContourType.values) {  
-        paintContour(type);
-      }
-
-      for (final type in FaceLandmarkType.values) {
-        paintLandmark(type);
+      for (final type in face.landmarks.keys) {
+        if (type == FaceLandmarkType.leftEye) {
+          final landmark = face.landmarks[type];
+          if (landmark != null) {
+            paintEye(landmark, leftEyePaint);
+          }
+        } else if (type == FaceLandmarkType.rightEye) {
+          final landmark = face.landmarks[type];
+          if (landmark != null) {
+            paintEye(landmark, rightEyePaint);
+          }
+        }
       }
     }
-  } 
+  }
 
+
+  
   @override
   bool shouldRepaint(FaceDetectorPainter oldDelegate) {
     return oldDelegate.imageSize != imageSize || oldDelegate.faces != faces;

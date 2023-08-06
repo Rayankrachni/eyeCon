@@ -1,9 +1,16 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
+import 'package:eyedetector/helpers/sharedPre.dart';
+import 'package:eyedetector/helpers/toast.dart';
+import 'package:eyedetector/provider/video_recording.dart';
+import 'package:eyedetector/videoPage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mlkit_commons/google_mlkit_commons.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CameraView extends StatefulWidget {
   CameraView(
@@ -37,7 +44,17 @@ class _CameraViewState extends State<CameraView> {
   double _minAvailableExposureOffset = 0.0;
   double _maxAvailableExposureOffset = 0.0;
   double _currentExposureOffset = 0.0;
+
   bool _changingCameraLens = false;
+  bool _isRecording = false;
+
+  bool messag1 = false;
+  bool messag2 = false;
+
+  RecordingProvider provider =RecordingProvider();
+  
+
+
 
   @override
   void initState() {
@@ -46,20 +63,35 @@ class _CameraViewState extends State<CameraView> {
     _initialize();
   }
 
-  void _initialize() async {
-    if (_cameras.isEmpty) {
-      _cameras = await availableCameras();
-    }
-    for (var i = 0; i < _cameras.length; i++) {
-      if (_cameras[i].lensDirection == widget.initialCameraLensDirection) {
-        _cameraIndex = i;
-        break;
-      }
-    }
-    if (_cameraIndex != -1) {
-      _startLiveFeed();
+void _initialize() async {
+  if (_cameras.isEmpty) {
+    print("---1");
+    _cameras = await availableCameras();
+  }
+  
+  for (var i = 0; i < _cameras.length; i++) {
+    if (_cameras[i].lensDirection == widget.initialCameraLensDirection) {
+      print("---index $i");
+      _cameraIndex = i;
+      break;
     }
   }
+  
+  if (_cameraIndex != -1) {
+    print("---index 3");
+    _startLiveFeed();
+  }
+
+  
+
+
+
+
+
+
+
+
+}
 
   @override
   void dispose() {
@@ -69,6 +101,8 @@ class _CameraViewState extends State<CameraView> {
 
   @override
   Widget build(BuildContext context) {
+
+
     return Scaffold(body: _liveFeedBody());
   }
 
@@ -76,29 +110,54 @@ class _CameraViewState extends State<CameraView> {
     if (_cameras.isEmpty) return Container();
     if (_controller == null) return Container();
     if (_controller?.value.isInitialized == false) return Container();
+    if (!messag1) _showMessage1();
+    _recordVideo();
+
+  
+    
     return Container(
       color: Colors.black,
       child: Stack(
         fit: StackFit.expand,
         children: <Widget>[
-          Center(
-            child: _changingCameraLens
-                ? Center(
-                    child: const Text('Changing camera lens'),
-                  )
-                : CameraPreview(
-                    _controller!,
-                    child: widget.customPaint,
-                  ),
+         Center(
+    child: _changingCameraLens
+        ?const  Center(
+            child:  Text('Changing camera lens'),
+          )
+        : CameraPreview(
+            _controller!,
+            child: widget.customPaint,
+          ),
           ),
           _backButton(),
           _switchLiveCameraToggle(),
-          _detectionViewModeToggle(),
+           //_videoRecording(),
           _zoomControl(),
           _exposureControl(),
+          if(_isRecording)
+          
+          Positioned(
+    top: 10,
+    right: 0,
+    child: Container(
+      color: Colors.white,
+      height: 800,
+      width:600,
+      child: TextButton(onPressed: (){_stopRecording();}, child:const Text("Recording at the back ground"),)
+      
+      
+       
+    ),
+          ),
         ],
       ),
     );
+    
+    
+    
+    
+    
   }
 
   Widget _backButton() => Positioned(
@@ -111,13 +170,16 @@ class _CameraViewState extends State<CameraView> {
             heroTag: Object(),
             onPressed: () => Navigator.of(context).pop(),
             backgroundColor: Colors.black54,
-            child: Icon(
+            child:const Icon(
               Icons.arrow_back_ios_outlined,
               size: 20,
             ),
           ),
         ),
       );
+
+
+
 
   Widget _detectionViewModeToggle() => Positioned(
         bottom: 8,
@@ -136,6 +198,22 @@ class _CameraViewState extends State<CameraView> {
           ),
         ),
       );
+   Widget _videoRecording() => Positioned(
+        bottom: 30,
+        left:5,
+        child: SizedBox(
+          height:100.0,
+          width:400.0,
+          child: Padding(
+            padding: const EdgeInsets.all(25),
+            child: ElevatedButton(
+             
+              child: Icon(_isRecording ? Icons.stop : Icons.circle ,size: 30,),
+              onPressed: () => _recordVideo(),
+            ),
+          ),
+        ),
+      );    
 
   Widget _switchLiveCameraToggle() => Positioned(
         bottom: 8,
@@ -274,16 +352,20 @@ class _CameraViewState extends State<CameraView> {
         _currentZoomLevel = value;
         _minAvailableZoom = value;
       });
+
       _controller?.getMaxZoomLevel().then((value) {
         _maxAvailableZoom = value;
       });
+      
       _currentExposureOffset = 0.0;
       _controller?.getMinExposureOffset().then((value) {
         _minAvailableExposureOffset = value;
       });
+      
       _controller?.getMaxExposureOffset().then((value) {
         _maxAvailableExposureOffset = value;
       });
+      
       _controller?.startImageStream(_processCameraImage).then((value) {
         if (widget.onCameraFeedReady != null) {
           widget.onCameraFeedReady!();
@@ -292,6 +374,9 @@ class _CameraViewState extends State<CameraView> {
           widget.onCameraLensDirectionChanged!(camera.lensDirection);
         }
       });
+   
+   
+   
       setState(() {});
     });
   }
@@ -316,6 +401,7 @@ class _CameraViewState extends State<CameraView> {
     if (inputImage == null) return;
     widget.onImage(inputImage);
   }
+  
 
   final _orientations = {
     DeviceOrientation.portraitUp: 0,
@@ -381,4 +467,72 @@ class _CameraViewState extends State<CameraView> {
       ),
     );
   }
+  _recordVideo() async {
+      if (_isRecording) {
+        final file = await _controller!.stopVideoRecording();
+        setState(() => _isRecording = false);
+        final route = MaterialPageRoute(
+          fullscreenDialog: true,
+          builder: (_) => VideoPage(filePath: file.path),
+        );
+        Navigator.push(context, route);
+      } else {
+        await _controller!.prepareForVideoRecording();
+        await _controller!.startVideoRecording();
+
+        Timer(const Duration(seconds: 5), () {
+
+          print("_isRecording $_isRecording");
+          setState(() => _isRecording = true);
+         });
+          print("_isRecording After $_isRecording");
+
+        
+      }
 }
+_stopRecording() async {
+
+
+  if(_isRecording){
+
+    
+     Provider.of<RecordingProvider>(context, listen: false).startRecording = false;
+    final file = await _controller!.stopVideoRecording();  
+   
+    final route = MaterialPageRoute(
+      fullscreenDialog: true,
+      builder: (_) => VideoPage(filePath: file.path),
+    );
+    Navigator.push(context, route);
+
+      setState(() => _isRecording = true);}
+  
+
+}
+
+
+
+_showMessage1(){
+  
+  Timer(const Duration(seconds: 2), () {
+
+   ToastHelper.showToast(msg: "Fix Your Phone",backgroundColor: Colors.grey);
+   setState(() {
+     messag1=true;
+   });
+
+
+    
+  
+    });
+
+}
+
+
+
+}
+
+
+
+
+
