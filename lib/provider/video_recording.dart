@@ -10,4 +10,35 @@ class RecordingProvider extends ChangeNotifier {
   }
 
   bool get startRecording => _startRecording;
+
+
+
+    bool _eyeinbox=false;
+
+  set eyeinbox(bool value) {
+      _eyeinbox = value;
+    //notifyListeners();
+  }
+
+  bool get eyeinbox => _eyeinbox;
+
+
+   bool _stopRecord=false;
+
+  set stopRecord(bool value) {
+      _stopRecord = value;
+    //notifyListeners();
+  }
+
+  bool get stopRecord => _stopRecord;
+ 
+ 
+
+
+ 
+
+
+
+
+  
 }

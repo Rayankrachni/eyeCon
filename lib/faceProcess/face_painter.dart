@@ -1,10 +1,13 @@
+import 'dart:async';
+
 import 'package:camera/camera.dart';
-import 'package:eyedetector/cordinator.dart';
-import 'dart:math' as math; 
-import 'package:eyedetector/helpers/sharedPre.dart';
+import 'package:eyedetector/faceProcess/cordinator.dart';
 import 'package:eyedetector/helpers/toast.dart';
+import 'package:eyedetector/provider/video_recording.dart';
+import 'dart:math' as math; 
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
+import 'package:provider/provider.dart';
 class FaceDetectorPainter extends CustomPainter {
   FaceDetectorPainter(
     this.faces,
@@ -55,6 +58,8 @@ class FaceDetectorPainter extends CustomPainter {
 
         for (final landmark in face.landmarks.values) {
         if (landmark != null && (landmark.type == FaceLandmarkType.leftEye || landmark.type == FaceLandmarkType.rightEye)) {
+        
+        
           final Offset eyePosition = Offset(
             translateX(
               landmark.position.x.toDouble(),
@@ -100,6 +105,9 @@ class FaceDetectorPainter extends CustomPainter {
 
       void paintEye(FaceLandmark landmark, Paint paint) {
         if (landmark.position != null) {
+        Provider.of<RecordingProvider>(context,listen: false).stopRecord==false; 
+        ToastHelper.showToast(msg: "The recording will be started after 10 sec fix your eye ", backgroundColor: Colors.green);
+          
           final double eyeRadius = 6.0;
           final Offset eyeCenter = Offset(
             translateX(
@@ -121,9 +129,24 @@ class FaceDetectorPainter extends CustomPainter {
           // Draw bounding box for the eyes
           canvas.drawCircle(eyeCenter, eyeRadius, paint);
         }
+        Timer(const Duration(seconds: 10), () {
+           //  ToastHelper.showToast(msg:"Recording in progress. Adjust your focus, please." , backgroundColor: Colors.green);
+            
+            if(Provider.of<RecordingProvider>(context,listen: false).stopRecord==false) {
+
+              print('------------1----------');
+              Provider.of<RecordingProvider>(context,listen: false).startRecording=true;
+            }
+            else{
+               print('------------2- ${Provider.of<RecordingProvider>(context,listen: false).stopRecord}.toString ---------');
+              Provider.of<RecordingProvider>(context,listen: false).startRecording=false;
+            }
+            
+        });
       }
 
-      for (final type in face.landmarks.keys) {
+      for (final type in face.landmarks.keys) 
+      {
         if (type == FaceLandmarkType.leftEye) {
           final landmark = face.landmarks[type];
           if (landmark != null) {
@@ -138,8 +161,6 @@ class FaceDetectorPainter extends CustomPainter {
       }
     }
   }
-
-
   
   @override
   bool shouldRepaint(FaceDetectorPainter oldDelegate) {

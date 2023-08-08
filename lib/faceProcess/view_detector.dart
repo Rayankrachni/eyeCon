@@ -1,4 +1,5 @@
 import 'package:camera/camera.dart';
+import 'package:eyedetector/model/user.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_commons/google_mlkit_commons.dart';
 
@@ -29,6 +30,7 @@ class DetectorView extends StatefulWidget {
   final Function(DetectorViewMode mode)? onDetectorViewModeChanged;
   final Function(CameraLensDirection direction)? onCameraLensDirectionChanged;
   final CameraLensDirection initialCameraLensDirection;
+
 
   @override
   State<DetectorView> createState() => _DetectorViewState();

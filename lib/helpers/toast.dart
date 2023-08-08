@@ -5,7 +5,7 @@ class ToastHelper {
   static void showToast({
     required String msg,
     required Color backgroundColor,
-    ToastGravity gravity = ToastGravity.TOP,
+    ToastGravity gravity = ToastGravity.BOTTOM,
     int timeInSecForIosWeb = 1,
 
     Color textColor = Colors.white,

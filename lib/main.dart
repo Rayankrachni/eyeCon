@@ -1,6 +1,7 @@
-import 'package:eyedetector/cameraRecording.dart';
+
 import 'package:eyedetector/faceDetection.dart';
 import 'package:eyedetector/provider/video_recording.dart';
+import 'package:eyedetector/splashScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -13,10 +14,13 @@ class MyApp extends StatelessWidget {
       create: (context) => RecordingProvider(),
       child: MaterialApp(
         title: 'Camera App',
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        home: FaceDetectorView(),
+        home: SplashScreen(),
+        
+        //FaceDetectorView(),
         
         //(),
       ),

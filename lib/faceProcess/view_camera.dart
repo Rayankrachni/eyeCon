@@ -2,15 +2,18 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
-import 'package:eyedetector/helpers/sharedPre.dart';
 import 'package:eyedetector/helpers/toast.dart';
 import 'package:eyedetector/provider/video_recording.dart';
-import 'package:eyedetector/videoPage.dart';
+import 'package:eyedetector/faceProcess/videoPage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:google_mlkit_commons/google_mlkit_commons.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+
+
 
 class CameraView extends StatefulWidget {
   CameraView(
@@ -36,6 +39,7 @@ class CameraView extends StatefulWidget {
 
 class _CameraViewState extends State<CameraView> {
   static List<CameraDescription> _cameras = [];
+  final FlutterFFmpeg _flutterFFmpeg = FlutterFFmpeg();
   CameraController? _controller;
   int _cameraIndex = -1;
   double _currentZoomLevel = 1.0;
@@ -47,9 +51,11 @@ class _CameraViewState extends State<CameraView> {
 
   bool _changingCameraLens = false;
   bool _isRecording = false;
-
-  bool messag1 = false;
-  bool messag2 = false;
+  bool startVideo= false;
+  
+  double? width;
+  bool messag1=false;
+  bool messag2=false;
 
   RecordingProvider provider =RecordingProvider();
   
@@ -60,49 +66,44 @@ class _CameraViewState extends State<CameraView> {
   void initState() {
     super.initState();
 
-    _initialize();
+      print("111--${Provider.of<RecordingProvider>(context, listen: false).startRecording}");
+      print("222-- ${Provider.of<RecordingProvider>(context, listen: false).stopRecord}");
+      print("333${Provider.of<RecordingProvider>(context, listen: false).eyeinbox}");
+      //Provider.of<RecordingProvider>(context,listen: false).startRecording=true;
+    
+      _initialize();
+     _showMessages();
+    
   }
 
 void _initialize() async {
   if (_cameras.isEmpty) {
-    print("---1");
     _cameras = await availableCameras();
   }
   
   for (var i = 0; i < _cameras.length; i++) {
     if (_cameras[i].lensDirection == widget.initialCameraLensDirection) {
-      print("---index $i");
       _cameraIndex = i;
       break;
     }
   }
   
   if (_cameraIndex != -1) {
-    print("---index 3");
     _startLiveFeed();
   }
-
-  
-
-
-
-
-
-
-
-
 }
 
   @override
   void dispose() {
     _stopLiveFeed();
+   
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-
-
+     width = MediaQuery.of(context).size.width;
+  
     return Scaffold(body: _liveFeedBody());
   }
 
@@ -110,9 +111,27 @@ void _initialize() async {
     if (_cameras.isEmpty) return Container();
     if (_controller == null) return Container();
     if (_controller?.value.isInitialized == false) return Container();
-    if (!messag1) _showMessage1();
-    _recordVideo();
+    
 
+
+     if (!messag1)
+          // ignore: curly_braces_in_flow_control_structures
+          ToastHelper.showToast(
+            msg: "Fix Your Phone Please",
+            backgroundColor: Colors.black,
+          );
+
+    
+
+
+ 
+    
+     if(Provider.of<RecordingProvider>(context,listen: false).startRecording==true){
+         _recordVideo();
+        ToastHelper.showToast(msg: "y=true", backgroundColor: Colors.green);}
+
+
+     
   
     
     return Container(
@@ -132,20 +151,73 @@ void _initialize() async {
           ),
           _backButton(),
           _switchLiveCameraToggle(),
-           //_videoRecording(),
+              
+
+          //eye box  
+
+
+          if (messag2)  
+          Positioned(
+          top: 100,
+          right: 20,
+          left: 20,
+          child: Container(
+           
+            height: 40,
+            width:350,
+            decoration: BoxDecoration(
+               color: Colors.black,
+               borderRadius: BorderRadius.circular(20)
+            ),
+            child: Center(child:  Text("Ensure that your eyes are within the assigned region",style: TextStyle(color: Colors.white),)
+            
+           ),
+             ),
+          ),
+      
+      
+          if (messag2)  
+          Positioned(
+          top: 200,
+          right: 20,
+          left: 20,
+          child: Container(
+           
+            height: 100,
+            width:350,
+            decoration: BoxDecoration(
+               color: Colors.transparent,
+              border: Border.all(
+                width: 2,
+                color: Colors.yellow,
+              ),
+            ),
+          
+            
+      
+       
+    ),
+          ),
+      
           _zoomControl(),
-          _exposureControl(),
-          if(_isRecording)
+          // _exposureControl(),
+          if(_isRecording  )
           
           Positioned(
-    top: 10,
-    right: 0,
-    child: Container(
-      color: Colors.white,
-      height: 800,
-      width:600,
-      child: TextButton(onPressed: (){_stopRecording();}, child:const Text("Recording at the back ground"),)
-      
+          top: 10,
+          right: 0,
+          child: Container(
+            color: Colors.white,
+            height: 800,
+            width:600,
+            child:  Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+
+              
+            ],)
+            
       
        
     ),
@@ -198,6 +270,8 @@ void _initialize() async {
           ),
         ),
       );
+ 
+ 
    Widget _videoRecording() => Positioned(
         bottom: 30,
         left:5,
@@ -403,14 +477,14 @@ void _initialize() async {
   }
   
 
-  final _orientations = {
+final _orientations = {
     DeviceOrientation.portraitUp: 0,
     DeviceOrientation.landscapeLeft: 90,
     DeviceOrientation.portraitDown: 180,
     DeviceOrientation.landscapeRight: 270,
   };
 
-  InputImage? _inputImageFromCameraImage(CameraImage image) {
+InputImage? _inputImageFromCameraImage(CameraImage image) {
     if (_controller == null) return null;
 
     // get image rotation
@@ -467,69 +541,121 @@ void _initialize() async {
       ),
     );
   }
-  _recordVideo() async {
-      if (_isRecording) {
-        final file = await _controller!.stopVideoRecording();
-        setState(() => _isRecording = false);
+
+bool recordingInProgress = false;
+
+Future<void> _recordVideo() async {
+  if (!recordingInProgress) {
+    try {
+      recordingInProgress = true;
+
+      if (startVideo) {
+         Provider.of<RecordingProvider>(context, listen: false).startRecording = false;
+        Provider.of<RecordingProvider>(context, listen: false).eyeinbox = false;
+         
+
+        final file = await _controller!.stopVideoRecording(); 
+            setState(() {
+             startVideo = false;
+           });
+       
+        final croppedFilePath = await getTemporaryDirectory().then((dir) {
+          return '${dir.path}/cropped_video.mp4';
+        });
+
+     // Desired width for cropping
+
+      const croppingHeight = 140; // Desired height for cropping
+      const y = 170; // Desired y position
+        await _flutterFFmpeg
+            .execute("-y -i ${file.path} -filter:v crop=in_w:$croppingHeight:0:300 -c:a copy $croppedFilePath")
+            .then((rc) => print("FFmpeg process exited with rc $rc"));
+         
+
+
         final route = MaterialPageRoute(
           fullscreenDialog: true,
-          builder: (_) => VideoPage(filePath: file.path),
+          builder: (_) => VideoPage(filePath: croppedFilePath),
         );
         Navigator.push(context, route);
+
+   
+       
+
+       
       } else {
-        await _controller!.prepareForVideoRecording();
-        await _controller!.startVideoRecording();
+        if (!_controller!.value.isRecordingVideo) {
+          await _controller!.prepareForVideoRecording();
+          await _controller!.startVideoRecording();
 
-        Timer(const Duration(seconds: 5), () {
+            setState(() {
 
-          print("_isRecording $_isRecording");
-          setState(() => _isRecording = true);
-         });
-          print("_isRecording After $_isRecording");
+            _isRecording = true;
+          });
+          ToastHelper.showToast(msg:"Recording in progress. Adjust your focus, please." , backgroundColor: Colors.green);
+        
+          Timer(const Duration(seconds: 2), () {
+                 setState(() => startVideo = true); 
+
+              
+            });
 
         
+
+          print("_isRecording After $_isRecording");
+        }
       }
+    } finally {
+      recordingInProgress = false;
+    }
+  }
 }
+
+
+
+
 _stopRecording() async {
-
-
-  if(_isRecording){
-
+ // ToastHelper.showToast(msg: "stoppppppppp", backgroundColor: Colors.purple);
+ 
     
-     Provider.of<RecordingProvider>(context, listen: false).startRecording = false;
-    final file = await _controller!.stopVideoRecording();  
+     setState((){
+      
+       startVideo = false;
+      _isRecording = false;});
    
-    final route = MaterialPageRoute(
-      fullscreenDialog: true,
-      builder: (_) => VideoPage(filePath: file.path),
-    );
-    Navigator.push(context, route);
+     Provider.of<RecordingProvider>(context, listen: false).startRecording = false;
+     Provider.of<RecordingProvider>(context,listen: false).eyeinbox=false;
+     await _controller!.stopVideoRecording();  
+     
+     
 
-      setState(() => _isRecording = true);}
+  
+   
   
 
 }
 
+_showMessages() {
+  setState(() {
+          messag1 = true;
+          messag2 = true;
+        });
 
+  Provider.of<RecordingProvider>(context,listen: false).eyeinbox=true;
 
-_showMessage1(){
-  
-  Timer(const Duration(seconds: 2), () {
+   
 
-   ToastHelper.showToast(msg: "Fix Your Phone",backgroundColor: Colors.grey);
-   setState(() {
-     messag1=true;
-   });
-
-
-    
-  
-    });
+  }
 
 }
 
+class VideoProcessor {
+  final FlutterFFmpeg _flutterFFmpeg = FlutterFFmpeg();
 
-
+  Future<void> cropVideo(String inputPath, String outputPath, int x, int y, int width, int height) async {
+    final arguments = ['-i', inputPath, '-filter:v', 'crop=100:20:20:10', outputPath];
+    await _flutterFFmpeg.executeWithArguments(arguments);
+  }
 }
 
 
