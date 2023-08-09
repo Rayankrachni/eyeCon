@@ -106,7 +106,7 @@ class FaceDetectorPainter extends CustomPainter {
       void paintEye(FaceLandmark landmark, Paint paint) {
         if (landmark.position != null) {
         Provider.of<RecordingProvider>(context,listen: false).stopRecord==false; 
-        ToastHelper.showToast(msg: "The recording will be started after 10 sec fix your eye ", backgroundColor: Colors.green);
+       // ToastHelper.showToast(msg: "The recording will be started after 10 sec fix your eye ", backgroundColor: Colors.green);
           
           final double eyeRadius = 6.0;
           final Offset eyeCenter = Offset(
@@ -129,13 +129,18 @@ class FaceDetectorPainter extends CustomPainter {
           // Draw bounding box for the eyes
           canvas.drawCircle(eyeCenter, eyeRadius, paint);
         }
-        Timer(const Duration(seconds: 10), () {
-           //  ToastHelper.showToast(msg:"Recording in progress. Adjust your focus, please." , backgroundColor: Colors.green);
-            
+        Timer(const Duration(seconds: 15), () {
+           //  
             if(Provider.of<RecordingProvider>(context,listen: false).stopRecord==false) {
 
               print('------------1----------');
-              Provider.of<RecordingProvider>(context,listen: false).startRecording=true;
+              ToastHelper.showToast(msg:"Recording in progress. Adjust your focus, please." , backgroundColor: Colors.green);
+              Timer(const Duration(seconds: 10), () {
+                   print('------------3----------');
+                Provider.of<RecordingProvider>(context,listen: false).startRecording=true;
+                  print('------------4----------');
+              });
+              
             }
             else{
                print('------------2- ${Provider.of<RecordingProvider>(context,listen: false).stopRecord}.toString ---------');

@@ -2,7 +2,10 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
+import 'package:eyedetector/faceDetection.dart';
+import 'package:eyedetector/helpers/navigator.dart';
 import 'package:eyedetector/helpers/toast.dart';
+import 'package:eyedetector/model/user.dart';
 import 'package:eyedetector/provider/video_recording.dart';
 import 'package:eyedetector/faceProcess/videoPage.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +23,7 @@ class CameraView extends StatefulWidget {
       {Key? key,
       required this.customPaint,
       required this.onImage,
+      required this.user,
       this.onCameraFeedReady,
       this.onDetectorViewModeChanged,
       this.onCameraLensDirectionChanged,
@@ -27,6 +31,7 @@ class CameraView extends StatefulWidget {
       : super(key: key);
 
   final CustomPaint? customPaint;
+  final UserModel? user;
   final Function(InputImage inputImage) onImage;
   final VoidCallback? onCameraFeedReady;
   final VoidCallback? onDetectorViewModeChanged;
@@ -127,8 +132,7 @@ void _initialize() async {
  
     
      if(Provider.of<RecordingProvider>(context,listen: false).startRecording==true){
-         _recordVideo();
-        ToastHelper.showToast(msg: "y=true", backgroundColor: Colors.green);}
+         _recordVideo();}
 
 
      
@@ -201,16 +205,15 @@ void _initialize() async {
       
           _zoomControl(),
           // _exposureControl(),
-          if(_isRecording  )
-          
-          Positioned(
+      if(_isRecording  )
+        Positioned(
           top: 10,
           right: 0,
           child: Container(
             color: Colors.white,
             height: 800,
             width:600,
-            child:  Column(
+            child:const  Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -222,6 +225,50 @@ void _initialize() async {
        
     ),
           ),
+     
+     
+      /* if(_isRecording  && Provider.of<RecordingProvider>(context,listen: false).stopRecord )
+        Positioned(
+          top: 10,
+          right: 0,
+          child: Container(
+            color: Colors.white,
+            height: 800,
+            width:600,
+            child:  Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+
+                 TextButton(onPressed: (){
+                      /*Provider.of<RecordingProvider>(context, listen: false).startRecording = false;
+                      Provider.of<RecordingProvider>(context, listen: false).eyeinbox = false;
+                      Provider.of<RecordingProvider>(context,listen: false).stopRecord=true;
+
+
+                     bool val2= Provider.of<RecordingProvider>(context, listen: false).eyeinbox;
+                     bool val3= Provider.of<RecordingProvider>(context, listen: false).startRecording;
+                    
+                     print("val-----  $val3 $val2");
+                     if( !val2 && !val3){
+                      Navigator.pushReplacement<void, void>(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (BuildContext context) =>  FaceDetectorView(userModel: widget.user,),
+                        ),
+                      );
+                     }*/
+                     
+                      Navigator.of(context).pop();
+                     }, child: Center(child: Text("Retake the video please \n You was  not in the right zone"))
+                  )
+               ],)
+            
+      
+       
+    ),
+          ),
+       */
         ],
       ),
     );
@@ -572,12 +619,8 @@ Future<void> _recordVideo() async {
             .then((rc) => print("FFmpeg process exited with rc $rc"));
          
 
-
-        final route = MaterialPageRoute(
-          fullscreenDialog: true,
-          builder: (_) => VideoPage(filePath: croppedFilePath),
-        );
-        Navigator.push(context, route);
+        pushAndRemove(context: context, screen: VideoPage(filePath: croppedFilePath,user: widget.user!,), );
+      
 
    
        

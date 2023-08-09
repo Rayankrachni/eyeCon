@@ -18,7 +18,9 @@ import 'package:provider/provider.dart';
 
 class FaceDetectorView extends StatefulWidget {
 
-
+  UserModel? userModel;
+    FaceDetectorView({
+    required this.userModel, });
   @override
   State<FaceDetectorView> createState() => _FaceDetectorViewState();
 }
@@ -35,6 +37,7 @@ class _FaceDetectorViewState extends State<FaceDetectorView> {
   bool _isBusy = false;
 
   CustomPaint? _customPaint;
+  
   String? _text;
 
   var _cameraLensDirection = CameraLensDirection.front;
@@ -54,6 +57,7 @@ class _FaceDetectorViewState extends State<FaceDetectorView> {
       title: 'Face Detector',
       customPaint: _customPaint,
       text: _text,
+      user:widget.userModel!,
       onImage: _processImage,
       initialCameraLensDirection: _cameraLensDirection,
       onCameraLensDirectionChanged: (value) => _cameraLensDirection = value,
@@ -93,8 +97,7 @@ class _FaceDetectorViewState extends State<FaceDetectorView> {
     if (x >= targetX &&  y >= 120 &&  y <= targetY  && x + width <= targetX + targetWidth && y + height <= targetY + targetHeight) {
       
       Provider.of<RecordingProvider>(context,listen: false).stopRecord=false;
-      ToastHelper.showToast(msg: "${Provider.of<RecordingProvider>(context,listen: false).stopRecord}", backgroundColor: Colors.green);
-      //ToastHelper.showToast(msg: "-----face in xis $x $targetX y  $y  $targetY  $y >= 100 width $width ${targetX + targetWidth} height $height ${targetY + targetHeight} -----",backgroundColor: Colors.green);
+      ToastHelper.showToast(msg: "Fix Your Position", backgroundColor: Colors.green);
       print("-----face in xis >= $x $targetX y <= $y  $targetY width $width  < ${targetX + targetWidth} height $height < ${targetY + targetHeight} -----");
       facesInTargetArea.add(face);
      

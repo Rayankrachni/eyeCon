@@ -21,12 +21,14 @@ class _FormPagetState extends State<FormPage> {
   TextEditingController email=TextEditingController();
   TextEditingController gender=TextEditingController();
   TextEditingController birthday=TextEditingController();
+
+  UserModel? userModel;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
     String selectedItem = 'male';
+    bool isEmptyBirthday=false;
 
   final List<String> languages = ['male', 'female'];
 
-  UserModel? userModel;
 
     DateTime selectedDate = DateTime.now();
 
@@ -41,6 +43,7 @@ class _FormPagetState extends State<FormPage> {
       setState(() {
         selectedDate = picked;
           selectedDate = picked;
+          isEmptyBirthday=false;
           birthday.text = "${picked.toLocal()}".split(' ')[0];
       });
     }
@@ -83,54 +86,54 @@ class _FormPagetState extends State<FormPage> {
                                   const SizedBox(width: 10,),
                                   Icon(Icons.trending_up,color: primaryColor,size: 20,),
                                   SizedBox(
-                                    width: MediaQuery.of(context).size.width*0.5,
-                                    child: DropdownButton<String>(
-                                                  
+                                    width: MediaQuery.of(context).size.width*0.7,
+                                    child:  DropdownButton<String>(
                                       value: selectedItem,
-                                      // Set the initial value
                                       onChanged: (newValue) {
                                         setState(() {
-                                          selectedItem=newValue!;
+                                          selectedItem = newValue!;
                                         });
-                                                  
-                                        // Handle dropdown value changes
                                         print('Selected item: $newValue');
                                       },
-                                      isExpanded: false,
-                                      hint: Text("Gender"),
-                                      icon: Icon(Icons.abc,color: Colors.transparent,), // Remove the icon
-                                      underline: Container(), 
-                                      focusColor: Colors.blue,
-                                      
-                                      padding: EdgeInsets.only(left: 00,right: 20,top: 0),
+                                      hint: const Text("Gender"),
+                                      icon: Icon(Icons.abc, color: Colors.transparent), // Remove the icon
+                                      underline: Container(),
+                                      padding: const EdgeInsets.only(left: 0, right: 20, top: 0),
                                       alignment: Alignment.center,
-                                      
+                                      // Set a value greater than or equal to kMinInteractiveDimension
+                                      itemHeight: kMinInteractiveDimension,
+                                      menuMaxHeight: 200,
                                       items: languages.map((String value) {
-                                              return DropdownMenuItem<String>(
+                                        return DropdownMenuItem<String>(
                                           value: value,
-                                                  
                                           child: SizedBox(
-
-                                              child: Padding(
-                                                padding: const EdgeInsets.symmetric(vertical: 8.0), // Add vertical padding
-                                                child: Center(child: Text(value,style:  TextStyle(color: Colors.grey,fontSize: 12),)),
-                                              )),
+                                            child: Padding(
+                                              padding: const EdgeInsets.symmetric(vertical: 8.0,),
+                                              child: Center(
+                                                child: Text(
+                                                  value,
+                                                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
                                         );
                                       }).toList(),
-                                        ),
+                                    ),
+
                                   ),
                                 ],
                               ),
                             
                             )),
-                            SizedBox(height: 20,),
+                            const SizedBox(height: 20,),
                  
                  Container(
                         width: MediaQuery.of(context).size.width*0.9,
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20.0),
                           border: Border.all(
-                            color: primaryColor
+                            color:isEmptyBirthday? Colors.red: primaryColor
                           )
                         ),
                          child: ElevatedButton(
@@ -140,7 +143,7 @@ class _FormPagetState extends State<FormPage> {
                            style: ElevatedButton.styleFrom(
                             primary: Colors.white,
                                elevation: 0,
-                              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12), // Button padding
+                              padding:const EdgeInsets.symmetric(horizontal: 20, vertical: 12), // Button padding
                               shape: RoundedRectangleBorder(
                               
                                 borderRadius: BorderRadius.circular(20.0), // Button border radius
@@ -148,8 +151,8 @@ class _FormPagetState extends State<FormPage> {
                          ),
                           child: Row(
                             children:  [
-                              Icon(Icons.date_range,color: primaryColor,),
-                              SizedBox(width: 10),
+                              Icon(Icons.date_range,color: isEmptyBirthday? Colors.red: primaryColor),
+                              const SizedBox(width: 10),
                               birthday.text.isEmpty ?
                               const Text(
                                 'Birth day',
@@ -159,25 +162,40 @@ class _FormPagetState extends State<FormPage> {
                               Text(
                                 birthday.text,
                                 style:
-                                    TextStyle(color: Colors.grey,fontSize: 12),
+                                    const TextStyle(color: Colors.black,fontSize: 14),
                               )
                             ],
                           ),
                                              ),
                        ),
-
+                       
                        SizedBox(height: 20,),
                   SizedBox(
                     width: MediaQuery.of(context).size.width*0.9,
                     child: ElevatedButton(onPressed: (){
-                      /*if(_formKey.currentState!.validate()){
-
-                         //userModel=UserModel({"111",name.text,surname.text,email.text,phone.text,birthday.text,gender.text});
-                        
+                      if(_formKey.currentState!.validate() ){
+                          if( birthday.text.isNotEmpty){
+                              userModel = UserModel(
+                        name: name.text,
+                        email: email.text,
+                        surname: surname.text,
+                        phone: phone.text,
+                        gender: selectedItem,
+                        birthday: birthday.text,
+                      );
+                      print("-------${userModel.toString}------");
+                      push(context: context, screen: FaceDetectorView(userModel: userModel,));
                          
-                      }*/
+                          }
+                          else {
+                            setState(() {
+                              isEmptyBirthday=true;
+                            });
+                          }
+                      
+                      }
 
-                      push(context: context, screen: FaceDetectorView());
+                     
                      }, 
                        style: ElevatedButton.styleFrom(
                         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12), // Button padding
