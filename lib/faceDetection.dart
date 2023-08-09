@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:camera/camera.dart';
 import 'package:eyedetector/faceProcess/face_painter.dart';
-import 'package:eyedetector/helpers/navigator.dart';
 import 'package:eyedetector/helpers/toast.dart';
 import 'package:eyedetector/model/user.dart';
 import 'package:eyedetector/provider/video_recording.dart';
@@ -39,6 +38,8 @@ class _FaceDetectorViewState extends State<FaceDetectorView> {
   CustomPaint? _customPaint;
   
   String? _text;
+
+  bool face_out= false;
 
   var _cameraLensDirection = CameraLensDirection.front;
 
@@ -79,7 +80,7 @@ class _FaceDetectorViewState extends State<FaceDetectorView> {
 
   // Define the position and dimensions of the area where you want to detect faces
   const double targetX = -5; // Define your desired x position
-  const double targetY = 240; // Define your desired y position
+  const double targetY = 200; // Define your desired y position
   const double targetWidth = 2000; // Define your desired width
   const double targetHeight = 600; // Define your desired height
   
@@ -95,9 +96,14 @@ class _FaceDetectorViewState extends State<FaceDetectorView> {
     // Check if the detected face is within the target area
     if (x >= targetX &&  y >= 120 &&  y <= targetY  && x + width <= targetX + targetWidth && y + height <= targetY + targetHeight) {
       
+      // ignore: use_build_context_synchronously
       Provider.of<RecordingProvider>(context,listen: false).stopRecord=false;
+
+      setState(() {
+        face_out=true;
+      });
+
       ToastHelper.showToast(msg: "Fix Your Position", backgroundColor: Colors.green);
-      print("-----face in xis >= $x $targetX y <= $y  $targetY width $width  < ${targetX + targetWidth} height $height < ${targetY + targetHeight} -----");
       facesInTargetArea.add(face);
      
        
@@ -106,12 +112,11 @@ class _FaceDetectorViewState extends State<FaceDetectorView> {
     else{
       
       facesInTargetArea=[];   
-      ToastHelper.showToast(msg: "record false",backgroundColor: Colors.blue);
+      // ignore: use_build_context_synchronously
       Provider.of<RecordingProvider>(context,listen: false).startRecording=false;
+      // ignore: use_build_context_synchronously
       Provider.of<RecordingProvider>(context,listen: false).stopRecord=true;
-
-      print("face out xis $x > = $targetX y  $y < $targetY width $width < ${targetX + targetWidth} height $height < ${targetY + targetHeight} ");
-      ToastHelper.showToast(msg: "You are not in the correct zoon fix you eyes",backgroundColor: Colors.red);
+      if(!face_out )ToastHelper.showToast(msg: "Focus your eyes inside the box and wait a few seconds",backgroundColor: Colors.red);
      
     
     }

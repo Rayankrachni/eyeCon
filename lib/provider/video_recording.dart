@@ -64,18 +64,13 @@ class RecordingProvider extends ChangeNotifier {
     });
 
     /*Response response = await sendData(formData);
-    print('FormData: $formData');
 
     if (response.statusCode == 200) {
-      print(response.data);
     } else {
-      print(response.data);
     }*/
   } catch (e) {
     // Handle error here
     if (e is DioError) {
-      print("DioError: ${e.message}");
-      print("Error Response: ${e.response}");
     }
   }
   _setLoading(false);

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
-import 'package:eyedetector/faceDetection.dart';
+import 'package:eyedetector/const/appconsts.dart';
 import 'package:eyedetector/helpers/navigator.dart';
 import 'package:eyedetector/helpers/toast.dart';
 import 'package:eyedetector/model/user.dart';
@@ -47,7 +47,7 @@ class _CameraViewState extends State<CameraView> {
   final FlutterFFmpeg _flutterFFmpeg = FlutterFFmpeg();
   CameraController? _controller;
   int _cameraIndex = -1;
-  double _currentZoomLevel = 1.0;
+  double _currentZoomLevel = initialZoom;
   double _minAvailableZoom = 1.0;
   double _maxAvailableZoom = 1.0;
   double _minAvailableExposureOffset = 0.0;
@@ -103,6 +103,7 @@ void _initialize() async {
   @override
   Widget build(BuildContext context) {
      width = MediaQuery.of(context).size.width;
+     
   
     return Scaffold(body: _liveFeedBody());
   }
@@ -123,7 +124,7 @@ void _initialize() async {
 
     
 
-
+    
  
     
      if(Provider.of<RecordingProvider>(context,listen: false).startRecording==true){
@@ -168,7 +169,7 @@ void _initialize() async {
                color: Colors.black,
                borderRadius: BorderRadius.circular(20)
             ),
-            child: Center(child:  Text("Ensure that your eyes are within the assigned region",style: TextStyle(color: Colors.white),)
+            child:const Center(child:  Text("Ensure that your eyes are within the assigned region",style: TextStyle(color: Colors.white),)
             
            ),
              ),
@@ -191,14 +192,11 @@ void _initialize() async {
                 color: Colors.yellow,
               ),
             ),
-          
-            
-      
-       
-    ),
+        ),
           ),
-      
-          _zoomControl(),
+
+         
+         // _zoomControl(),
           // _exposureControl(),
       if(_isRecording  )
         Positioned(
@@ -263,7 +261,7 @@ void _initialize() async {
             heroTag: Object(),
             onPressed: widget.onDetectorViewModeChanged,
             backgroundColor: Colors.black54,
-            child: Icon(
+            child:const Icon(
               Icons.photo_library_outlined,
               size: 25,
             ),
@@ -309,54 +307,6 @@ void _initialize() async {
         ),
       );
 
-  Widget _zoomControl() => Positioned(
-        bottom: 16,
-        left: 0,
-        right: 0,
-        child: Align(
-          alignment: Alignment.bottomCenter,
-          child: SizedBox(
-            width: 250,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Slider(
-                    value: _currentZoomLevel,
-                    min: _minAvailableZoom,
-                    max: _maxAvailableZoom,
-                    activeColor: Colors.white,
-                    inactiveColor: Colors.white30,
-                    onChanged: (value) async {
-                      setState(() {
-                        _currentZoomLevel = value;
-                      });
-                      await _controller?.setZoomLevel(value);
-                    },
-                  ),
-                ),
-                Container(
-                  width: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.black54,
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Center(
-                      child: Text(
-                        '${_currentZoomLevel.toStringAsFixed(1)}x',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
 
   Widget _exposureControl() => Positioned(
         top: 40,
@@ -565,10 +515,10 @@ Future<void> _recordVideo() async {
 
      // Desired width for cropping
 
-      const croppingHeight = 140; // Desired height for cropping
+      const croppingHeight = 150; // Desired height for cropping
       const y = 170; // Desired y position
         await _flutterFFmpeg
-            .execute("-y -i ${file.path} -filter:v crop=in_w:$croppingHeight:0:320 -c:a copy $croppedFilePath")
+            .execute("-y -i ${file.path} -filter:v crop=in_w:$croppingHeight:0:280 -c:a copy $croppedFilePath")
             .then((rc) => print("FFmpeg process exited with rc $rc"));
          
 
@@ -588,9 +538,9 @@ Future<void> _recordVideo() async {
 
             _isRecording = true;
           });
-          ToastHelper.showToast(msg:"Recording in progress. Adjust your focus, please." , backgroundColor: Colors.green);
+          ToastHelper.showToast(msg:"Recording in progress. Adjuste your focus, please." , backgroundColor: Colors.green);
         
-          Timer(const Duration(seconds: 4), () {
+          Timer(const Duration(seconds: durationOfRecording), () {
                  setState(() => startVideo = true); 
 
               
@@ -610,7 +560,6 @@ Future<void> _recordVideo() async {
 
 
 _stopRecording() async {
- // ToastHelper.showToast(msg: "stoppppppppp", backgroundColor: Colors.purple);
  
     
      setState((){

@@ -472,6 +472,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.5"
+  print_remover:
+    dependency: "direct main"
+    description:
+      name: print_remover
+      sha256: "11ccef2a6e6b66d424526e24ae4c3eb6df2b1f2bda345efe4a0846882ab7d39f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   provider:
     dependency: "direct main"
     description:

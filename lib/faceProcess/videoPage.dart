@@ -65,7 +65,7 @@ Widget build(BuildContext context) {
               Padding(
                 padding: const EdgeInsets.all(15.0),
                 child: SizedBox(
-                  height: 100,
+                  height: 140,
                   child: Center(child: VideoPlayer(_videoPlayerController))),  ),
               const SizedBox(height: 30,),  
 
@@ -107,7 +107,6 @@ Widget build(BuildContext context) {
                     bool val3= Provider.of<RecordingProvider>(context, listen: false).startRecording;
                      // Provider.of<RecordingProvider>(context, listen: false).eyeinbox = false;
                     
-                     print("val-----  $val3 $val2");
                      if(!val2 && !val3){
                         Navigator.pushReplacement<void, void>(
                         context,

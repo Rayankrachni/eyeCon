@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:camera/camera.dart';
+import 'package:eyedetector/const/appconsts.dart';
 import 'package:eyedetector/faceProcess/cordinator.dart';
 import 'package:eyedetector/helpers/toast.dart';
 import 'package:eyedetector/provider/video_recording.dart';
@@ -105,44 +106,40 @@ class FaceDetectorPainter extends CustomPainter {
 
       void paintEye(FaceLandmark landmark, Paint paint) {
         if (landmark.position != null) {
-        Provider.of<RecordingProvider>(context,listen: false).stopRecord==false; 
-       // ToastHelper.showToast(msg: "The recording will be started after 10 sec fix your eye ", backgroundColor: Colors.green);
-          
-          final double eyeRadius = 6.0;
-          final Offset eyeCenter = Offset(
-            translateX(
-              landmark.position.x.toDouble(),
-              size,
-              imageSize,
-              rotation,
-              cameraLensDirection,
-            ),
-            translateY(
-              landmark.position.y.toDouble(),
-              size,
-              imageSize,
-              rotation,
-              cameraLensDirection,
-            ),
-          );
+            Provider.of<RecordingProvider>(context,listen: false).stopRecord==false; 
+            final double eyeRadius = 6.0;
+              final Offset eyeCenter = Offset(
+                translateX(
+                  landmark.position.x.toDouble(),
+                  size,
+                  imageSize,
+                  rotation,
+                  cameraLensDirection,
+                ),
+                translateY(
+                  landmark.position.y.toDouble(),
+                  size,
+                  imageSize,
+                  rotation,
+                  cameraLensDirection,
+                ),
+              );
 
-          // Draw bounding box for the eyes
-          canvas.drawCircle(eyeCenter, eyeRadius, paint);
-        }
-        Timer(const Duration(seconds: 15), () {
+              // Draw bounding box for the eyes
+              canvas.drawCircle(eyeCenter, eyeRadius, paint);
+            }
+            Timer(const Duration(seconds: 7), () {
            //  
             if(Provider.of<RecordingProvider>(context,listen: false).stopRecord==false) {
 
-              print('------------1----------');
-              ToastHelper.showToast(msg:"Recording in progress. Adjust your focus, please." , backgroundColor: Colors.green);
-              Timer(const Duration(seconds: 10), () {
+              //  ToastHelper.showToast(msg:"Recording in progress, adjust your focus, please." , backgroundColor: Colors.green);
+              Timer( const Duration(seconds: durationToValid), () {
                 Provider.of<RecordingProvider>(context,listen: false).startRecording=true;
              
               });
               
             }
             else{
-               print('------------2- ${Provider.of<RecordingProvider>(context,listen: false).stopRecord}.toString ---------');
               Provider.of<RecordingProvider>(context,listen: false).startRecording=false;
             }
             

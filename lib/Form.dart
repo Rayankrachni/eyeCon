@@ -93,7 +93,6 @@ class _FormPagetState extends State<FormPage> {
                                         setState(() {
                                           selectedItem = newValue!;
                                         });
-                                        print('Selected item: $newValue');
                                       },
                                       hint: const Text("Gender"),
                                       icon: Icon(Icons.abc, color: Colors.transparent), // Remove the icon
@@ -183,7 +182,6 @@ class _FormPagetState extends State<FormPage> {
                         gender: selectedItem,
                         birthday: birthday.text,
                       );
-                      print("-------${userModel.toString}------");
                       push(context: context, screen: FaceDetectorView(userModel: userModel,));
                          
                           }
