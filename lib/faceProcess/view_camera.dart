@@ -70,11 +70,6 @@ class _CameraViewState extends State<CameraView> {
   @override
   void initState() {
     super.initState();
-
-      print("111--${Provider.of<RecordingProvider>(context, listen: false).startRecording}");
-      print("222-- ${Provider.of<RecordingProvider>(context, listen: false).stopRecord}");
-      print("333${Provider.of<RecordingProvider>(context, listen: false).eyeinbox}");
-      //Provider.of<RecordingProvider>(context,listen: false).startRecording=true;
     
       _initialize();
      _showMessages();
@@ -227,49 +222,7 @@ void _initialize() async {
           ),
      
      
-      /* if(_isRecording  && Provider.of<RecordingProvider>(context,listen: false).stopRecord )
-        Positioned(
-          top: 10,
-          right: 0,
-          child: Container(
-            color: Colors.white,
-            height: 800,
-            width:600,
-            child:  Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-
-                 TextButton(onPressed: (){
-                      /*Provider.of<RecordingProvider>(context, listen: false).startRecording = false;
-                      Provider.of<RecordingProvider>(context, listen: false).eyeinbox = false;
-                      Provider.of<RecordingProvider>(context,listen: false).stopRecord=true;
-
-
-                     bool val2= Provider.of<RecordingProvider>(context, listen: false).eyeinbox;
-                     bool val3= Provider.of<RecordingProvider>(context, listen: false).startRecording;
-                    
-                     print("val-----  $val3 $val2");
-                     if( !val2 && !val3){
-                      Navigator.pushReplacement<void, void>(
-                        context,
-                        MaterialPageRoute<void>(
-                          builder: (BuildContext context) =>  FaceDetectorView(userModel: widget.user,),
-                        ),
-                      );
-                     }*/
-                     
-                      Navigator.of(context).pop();
-                     }, child: Center(child: Text("Retake the video please \n You was  not in the right zone"))
-                  )
-               ],)
-            
-      
-       
-    ),
-          ),
-       */
-        ],
+      ],
       ),
     );
     
@@ -615,7 +568,7 @@ Future<void> _recordVideo() async {
       const croppingHeight = 140; // Desired height for cropping
       const y = 170; // Desired y position
         await _flutterFFmpeg
-            .execute("-y -i ${file.path} -filter:v crop=in_w:$croppingHeight:0:300 -c:a copy $croppedFilePath")
+            .execute("-y -i ${file.path} -filter:v crop=in_w:$croppingHeight:0:320 -c:a copy $croppedFilePath")
             .then((rc) => print("FFmpeg process exited with rc $rc"));
          
 
@@ -637,7 +590,7 @@ Future<void> _recordVideo() async {
           });
           ToastHelper.showToast(msg:"Recording in progress. Adjust your focus, please." , backgroundColor: Colors.green);
         
-          Timer(const Duration(seconds: 2), () {
+          Timer(const Duration(seconds: 4), () {
                  setState(() => startVideo = true); 
 
               
@@ -645,7 +598,6 @@ Future<void> _recordVideo() async {
 
         
 
-          print("_isRecording After $_isRecording");
         }
       }
     } finally {

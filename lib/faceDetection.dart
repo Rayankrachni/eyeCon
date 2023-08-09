@@ -74,7 +74,6 @@ class _FaceDetectorViewState extends State<FaceDetectorView> {
     
        
     final bool startDetection = Provider.of<RecordingProvider>(context, listen: false).eyeinbox;
-    print("eyes are in the box");
     final faces = await _faceDetector.processImage(inputImage);
 
 

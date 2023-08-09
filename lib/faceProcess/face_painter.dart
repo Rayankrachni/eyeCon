@@ -136,9 +136,8 @@ class FaceDetectorPainter extends CustomPainter {
               print('------------1----------');
               ToastHelper.showToast(msg:"Recording in progress. Adjust your focus, please." , backgroundColor: Colors.green);
               Timer(const Duration(seconds: 10), () {
-                   print('------------3----------');
                 Provider.of<RecordingProvider>(context,listen: false).startRecording=true;
-                  print('------------4----------');
+             
               });
               
             }

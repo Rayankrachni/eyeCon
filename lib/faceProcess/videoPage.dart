@@ -81,7 +81,6 @@ Widget build(BuildContext context) {
                       bool val2= Provider.of<RecordingProvider>(context, listen: false).eyeinbox;
                       bool val3= Provider.of<RecordingProvider>(context, listen: false).startRecording;
                     
-                     print("val----${ widget.user.birthday} ${ widget.user.name}-  $val3 $val2");
                      if( !val2 && !val3){
                       Navigator.pushReplacement<void, void>(
                         context,
