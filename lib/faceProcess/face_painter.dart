@@ -1,15 +1,17 @@
 import 'dart:async';
 
 import 'package:camera/camera.dart';
-import 'package:eyedetector/const/appconsts.dart';
+import 'package:eyedetector/const/appConsts.dart';
 import 'package:eyedetector/faceProcess/cordinator.dart';
-import 'package:eyedetector/helpers/toast.dart';
 import 'package:eyedetector/provider/video_recording.dart';
 import 'dart:math' as math; 
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:provider/provider.dart';
+
+
 class FaceDetectorPainter extends CustomPainter {
+
   FaceDetectorPainter(
     this.faces,
     this.imageSize,
@@ -27,23 +29,20 @@ class FaceDetectorPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final Paint facePaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0
-      ..color = Colors.red;
+  
 
     final Paint leftEyePaint = Paint()
       ..style = PaintingStyle.fill
-      ..color = Colors.green;
+      ..color = Colors.white;
 
     final Paint rightEyePaint = Paint()
       ..style = PaintingStyle.fill
-      ..color = Colors.blue;
+      ..color = Colors.white;
 
          final Paint eyeBoxPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0
-      ..color = Colors.red;
+      ..color = Colors.transparent;
 
     for (final Face face in faces) 
     {
@@ -67,15 +66,13 @@ class FaceDetectorPainter extends CustomPainter {
               size,
               imageSize,
               rotation,
-              cameraLensDirection,
-            ),
+              cameraLensDirection),
             translateY(
               landmark.position.y.toDouble(),
               size,
               imageSize,
               rotation,
-              cameraLensDirection,
-            ),
+              cameraLensDirection,),
           );
 
           if (landmark.type == FaceLandmarkType.leftEye) {
@@ -91,80 +88,81 @@ class FaceDetectorPainter extends CustomPainter {
           }
         }
       }
-    // Draw bounding box for the eyes
- if (leftEyeLeft != double.infinity && leftEyeTop != double.infinity && rightEyeRight != double.negativeInfinity && rightEyeBottom != double.negativeInfinity) {
-        final double boxHeight = (rightEyeBottom - leftEyeTop) * 3; // Increase the height factor as needed
-        final Rect eyesBoundingBox = Rect.fromLTRB(
-          leftEyeLeft,
-          leftEyeTop - boxHeight,
-          rightEyeRight,
-          rightEyeBottom,
-        );
-
-        canvas.drawRect(eyesBoundingBox, eyeBoxPaint);
-      }
-
-      void paintEye(FaceLandmark landmark, Paint paint) {
-        if (landmark.position != null) {
-            Provider.of<RecordingProvider>(context,listen: false).stopRecord==false; 
-            final double eyeRadius = 6.0;
-              final Offset eyeCenter = Offset(
-                translateX(
-                  landmark.position.x.toDouble(),
-                  size,
-                  imageSize,
-                  rotation,
-                  cameraLensDirection,
-                ),
-                translateY(
-                  landmark.position.y.toDouble(),
-                  size,
-                  imageSize,
-                  rotation,
-                  cameraLensDirection,
-                ),
+  
+      if (leftEyeLeft != double.infinity && leftEyeTop != double.infinity && rightEyeRight != double.negativeInfinity && rightEyeBottom != double.negativeInfinity) {
+              
+              final double boxHeight = (rightEyeBottom - leftEyeTop) * 3; // Increase the height factor as needed
+              final Rect eyesBoundingBox = Rect.fromLTRB(
+                leftEyeLeft,
+                leftEyeTop - boxHeight,
+                rightEyeRight,
+                rightEyeBottom,
               );
 
-              // Draw bounding box for the eyes
-              canvas.drawCircle(eyeCenter, eyeRadius, paint);
-            }
-            Timer(const Duration(seconds: 7), () {
-           //  
-            if(Provider.of<RecordingProvider>(context,listen: false).stopRecord==false) {
+              canvas.drawRect(eyesBoundingBox, eyeBoxPaint);
+          }
 
-              //  ToastHelper.showToast(msg:"Recording in progress, adjust your focus, please." , backgroundColor: Colors.green);
-              Timer( const Duration(seconds: durationToValid), () {
-                Provider.of<RecordingProvider>(context,listen: false).startRecording=true;
-             
+      void paintEye(FaceLandmark landmark, Paint paint) {
+              if (landmark.position != null) {
+                  Provider.of<RecordingProvider>(context,listen: false).stopRecord==false; 
+                  final double eyeRadius = 6.0;
+                    final Offset eyeCenter = Offset(
+                      translateX(
+                        landmark.position.x.toDouble(),
+                        size,
+                        imageSize,
+                        rotation,
+                        cameraLensDirection,
+                      ),
+                      translateY(
+                        landmark.position.y.toDouble(),
+                        size,
+                        imageSize,
+                        rotation,
+                        cameraLensDirection,
+                      ),
+                    );
+
+                    // Draw bounding box for the eyes
+                    canvas.drawCircle(eyeCenter, eyeRadius, paint);
+                  }
+                  Timer(const Duration(seconds: durationToTest), () {
+                //  
+                  if(Provider.of<RecordingProvider>(context,listen: false).stopRecord==false) {
+
+                    Timer( const Duration(seconds: durationToValid), () {
+                      Provider.of<RecordingProvider>(context,listen: false).startRecording=true;         
+                    });
+                    
+                  }
+                  else{
+                    Provider.of<RecordingProvider>(context,listen: false).startRecording=false;
+                  }
+                  
               });
-              
             }
-            else{
-              Provider.of<RecordingProvider>(context,listen: false).startRecording=false;
-            }
-            
-        });
-      }
 
-      for (final type in face.landmarks.keys) 
-      {
-        if (type == FaceLandmarkType.leftEye) {
-          final landmark = face.landmarks[type];
-          if (landmark != null) {
-            paintEye(landmark, leftEyePaint);
+            for (final type in face.landmarks.keys) 
+            {
+              if (type == FaceLandmarkType.leftEye) {
+                final landmark = face.landmarks[type];
+                  if (landmark != null) {
+                    paintEye(landmark, leftEyePaint);
+                  }
+              } else if (type == FaceLandmarkType.rightEye) {
+                final landmark = face.landmarks[type];
+                  if (landmark != null) {
+                    paintEye(landmark, rightEyePaint);
+                  }
+              }
+            }
           }
-        } else if (type == FaceLandmarkType.rightEye) {
-          final landmark = face.landmarks[type];
-          if (landmark != null) {
-            paintEye(landmark, rightEyePaint);
-          }
+        } 
+        
+        @override
+        bool shouldRepaint(FaceDetectorPainter oldDelegate) {
+          return oldDelegate.imageSize != imageSize || oldDelegate.faces != faces;
         }
-      }
-    }
-  }
-  
-  @override
-  bool shouldRepaint(FaceDetectorPainter oldDelegate) {
-    return oldDelegate.imageSize != imageSize || oldDelegate.faces != faces;
-  }
-}
+
+
+ }

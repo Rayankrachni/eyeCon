@@ -9,7 +9,7 @@ class RecordingProvider extends ChangeNotifier {
 
   set startRecording(bool value) {
     _startRecording = value;
-    //notifyListeners();
+    notifyListeners();
   }
 
   bool get startRecording => _startRecording;
@@ -30,7 +30,7 @@ class RecordingProvider extends ChangeNotifier {
 
   set stopRecord(bool value) {
       _stopRecord = value;
-    //notifyListeners();
+    notifyListeners();
   }
 
   bool get stopRecord => _stopRecord;

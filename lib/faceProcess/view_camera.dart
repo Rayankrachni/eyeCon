@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
-import 'package:eyedetector/const/appconsts.dart';
+import 'package:eyedetector/const/appConsts.dart';
 import 'package:eyedetector/helpers/navigator.dart';
 import 'package:eyedetector/helpers/toast.dart';
 import 'package:eyedetector/model/user.dart';
@@ -19,6 +19,7 @@ import 'package:provider/provider.dart';
 
 
 class CameraView extends StatefulWidget {
+
   CameraView(
       {Key? key,
       required this.customPaint,
@@ -102,9 +103,6 @@ void _initialize() async {
 
   @override
   Widget build(BuildContext context) {
-     width = MediaQuery.of(context).size.width;
-     
-  
     return Scaffold(body: _liveFeedBody());
   }
 
@@ -112,79 +110,49 @@ void _initialize() async {
     if (_cameras.isEmpty) return Container();
     if (_controller == null) return Container();
     if (_controller?.value.isInitialized == false) return Container();
-    
-
-
-     if (!messag1)
+     if(!messag1)
           // ignore: curly_braces_in_flow_control_structures
-          ToastHelper.showToast(
-            msg: "Fix Your Phone Please",
-            backgroundColor: Colors.black,
-          );
-
+          ToastHelper.showToast(msg: "Fix Your Phone Please",   backgroundColor: Colors.black);
     
-
-    
- 
-    
-     if(Provider.of<RecordingProvider>(context,listen: false).startRecording==true){
-         _recordVideo();}
-
-
-     
-  
-    
-    return Container(
+     if(Provider.of<RecordingProvider>(context,listen: false).startRecording==true){_recordVideo();}
+     return Container(
       color: Colors.black,
       child: Stack(
         fit: StackFit.expand,
         children: <Widget>[
          Center(
-    child: _changingCameraLens
-        ?const  Center(
-            child:  Text('Changing camera lens'),
-          )
-        : CameraPreview(
-            _controller!,
-            child: widget.customPaint,
-          ),
-          ),
-          _backButton(),
-          _switchLiveCameraToggle(),
-              
-
-          //eye box  
-
-
+    child: _changingCameraLens 
+            ?const  Center(child:  Text('Changing camera lens'),)
+            : CameraPreview( _controller!, child: widget.customPaint, ),),
+            _backButton(),
+            _switchLiveCameraToggle(),
           if (messag2)  
           Positioned(
-          top: 100,
-          right: 20,
-          left: 20,
-          child: Container(
-           
-            height: 40,
-            width:350,
-            decoration: BoxDecoration(
-               color: Colors.black,
-               borderRadius: BorderRadius.circular(20)
-            ),
-            child:const Center(child:  Text("Ensure that your eyes are within the assigned region",style: TextStyle(color: Colors.white),)
+            top: 100,
+            right: 20,
+            left: 20,
+            child: Container(
             
-           ),
-             ),
+              height: 40,
+              width:350,
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(20)  ),
+              child:const Center(child:  Text("Ensure that your eyes are within the assigned region",style: TextStyle(color: Colors.white),)
+            ),
+          ),
           ),
       
       
           if (messag2)  
           Positioned(
-          top: 200,
-          right: 20,
-          left: 20,
-          child: Container(
+            top: 200,
+            right: 20,
+            left: 20,
+            child: Container(
            
             height: 100,
-            width:350,
+            width:MediaQuery.of(context).size.width*0.7,
             decoration: BoxDecoration(
                color: Colors.transparent,
               border: Border.all(
@@ -193,42 +161,31 @@ void _initialize() async {
               ),
             ),
         ),
-          ),
+      ),
 
          
-         // _zoomControl(),
-          // _exposureControl(),
+       
       if(_isRecording  )
         Positioned(
           top: 10,
           right: 0,
           child: Container(
             color: Colors.white,
-            height: 800,
-            width:600,
+            height: MediaQuery.of(context).size.height,
+            width:MediaQuery.of(context).size.width,
             child:const  Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
 
               
-            ],)
-            
-      
-       
-    ),
-          ),
-     
-     
+            ],)   ),
+        ),
       ],
-      ),
-    );
-    
-    
-    
-    
-    
-  }
+    ),
+  );
+     
+}
 
   Widget _backButton() => Positioned(
         top: 40,
@@ -270,7 +227,7 @@ void _initialize() async {
       );
  
  
-   Widget _videoRecording() => Positioned(
+  Widget _videoRecording() => Positioned(
         bottom: 30,
         left:5,
         child: SizedBox(
@@ -312,7 +269,7 @@ void _initialize() async {
         top: 40,
         right: 8,
         child: ConstrainedBox(
-          constraints: BoxConstraints(
+          constraints:const BoxConstraints(
             maxHeight: 250,
           ),
           child: Column(children: [
@@ -437,51 +394,39 @@ final _orientations = {
 InputImage? _inputImageFromCameraImage(CameraImage image) {
     if (_controller == null) return null;
 
-    // get image rotation
-    // it is used in android to convert the InputImage from Dart to Java: https://github.com/flutter-ml/google_ml_kit_flutter/blob/master/packages/google_mlkit_commons/android/src/main/java/com/google_mlkit_commons/InputImageConverter.java
-    // `rotation` is not used in iOS to convert the InputImage from Dart to Obj-C: https://github.com/flutter-ml/google_ml_kit_flutter/blob/master/packages/google_mlkit_commons/ios/Classes/MLKVisionImage%2BFlutterPlugin.m
-    // in both platforms `rotation` and `camera.lensDirection` can be used to compensate `x` and `y` coordinates on a canvas: https://github.com/flutter-ml/google_ml_kit_flutter/blob/master/packages/example/lib/vision_detector_views/painters/coordinates_translator.dart
     final camera = _cameras[_cameraIndex];
     final sensorOrientation = camera.sensorOrientation;
-    // print(
-    //     'lensDirection: ${camera.lensDirection}, sensorOrientation: $sensorOrientation, ${_controller?.value.deviceOrientation} ${_controller?.value.lockedCaptureOrientation} ${_controller?.value.isCaptureOrientationLocked}');
     InputImageRotation? rotation;
-    if (Platform.isIOS) {
-      rotation = InputImageRotationValue.fromRawValue(sensorOrientation);
-    } else if (Platform.isAndroid) {
-      var rotationCompensation =
-          _orientations[_controller!.value.deviceOrientation];
-      if (rotationCompensation == null) return null;
-      if (camera.lensDirection == CameraLensDirection.front) {
-        // front-facing
-        rotationCompensation = (sensorOrientation + rotationCompensation) % 360;
-      } else {
-        // back-facing
-        rotationCompensation =
-            (sensorOrientation - rotationCompensation + 360) % 360;
+      if (Platform.isIOS) {
+        rotation = InputImageRotationValue.fromRawValue(sensorOrientation);
+      } else if (Platform.isAndroid) {
+        var rotationCompensation =
+            _orientations[_controller!.value.deviceOrientation];
+        if (rotationCompensation == null) return null;
+        if (camera.lensDirection == CameraLensDirection.front) {
+          // front-facing
+          rotationCompensation = (sensorOrientation + rotationCompensation) % 360;
+        } else {
+          // back-facing
+          rotationCompensation =
+              (sensorOrientation - rotationCompensation + 360) % 360;
+        }
+        rotation = InputImageRotationValue.fromRawValue(rotationCompensation);
+        // print('rotationCompensation: $rotationCompensation');
       }
-      rotation = InputImageRotationValue.fromRawValue(rotationCompensation);
-      // print('rotationCompensation: $rotationCompensation');
-    }
     if (rotation == null) return null;
-    // print('final rotation: $rotation');
-
-    // get image format
+   
     final format = InputImageFormatValue.fromRawValue(image.format.raw);
-    // validate format depending on platform
-    // only supported formats:
-    // * nv21 for Android
-    // * bgra8888 for iOS
-    if (format == null ||
-        (Platform.isAndroid && format != InputImageFormat.nv21) ||
-        (Platform.isIOS && format != InputImageFormat.bgra8888)) return null;
+    
+      if (format == null ||
+          (Platform.isAndroid && format != InputImageFormat.nv21) ||
+          (Platform.isIOS && format != InputImageFormat.bgra8888)) return null;
 
-    // since format is constraint to nv21 or bgra8888, both only have one plane
-    if (image.planes.length != 1) return null;
-    final plane = image.planes.first;
+      // since format is constraint to nv21 or bgra8888, both only have one plane
+      if (image.planes.length != 1) return null;
+      final plane = image.planes.first;
 
-    // compose InputImage using bytes
-    return InputImage.fromBytes(
+  return InputImage.fromBytes(
       bytes: plane.bytes,
       metadata: InputImageMetadata(
         size: Size(image.width.toDouble(), image.height.toDouble()),
@@ -493,7 +438,8 @@ InputImage? _inputImageFromCameraImage(CameraImage image) {
   }
 
 bool recordingInProgress = false;
-
+  
+  
 Future<void> _recordVideo() async {
   if (!recordingInProgress) {
     try {
@@ -513,22 +459,13 @@ Future<void> _recordVideo() async {
           return '${dir.path}/cropped_video.mp4';
         });
 
-     // Desired width for cropping
-
-      const croppingHeight = 150; // Desired height for cropping
-      const y = 170; // Desired y position
+      const croppingHeight = 150; 
         await _flutterFFmpeg
             .execute("-y -i ${file.path} -filter:v crop=in_w:$croppingHeight:0:280 -c:a copy $croppedFilePath")
             .then((rc) => print("FFmpeg process exited with rc $rc"));
          
 
         pushAndRemove(context: context, screen: VideoPage(filePath: croppedFilePath,user: widget.user!,), );
-      
-
-   
-       
-
-       
       } else {
         if (!_controller!.value.isRecordingVideo) {
           await _controller!.prepareForVideoRecording();
@@ -541,13 +478,8 @@ Future<void> _recordVideo() async {
           ToastHelper.showToast(msg:"Recording in progress. Adjuste your focus, please." , backgroundColor: Colors.green);
         
           Timer(const Duration(seconds: durationOfRecording), () {
-                 setState(() => startVideo = true); 
-
-              
+                 setState(() => startVideo = true);  
             });
-
-        
-
         }
       }
     } finally {
@@ -559,25 +491,6 @@ Future<void> _recordVideo() async {
 
 
 
-_stopRecording() async {
- 
-    
-     setState((){
-      
-       startVideo = false;
-      _isRecording = false;});
-   
-     Provider.of<RecordingProvider>(context, listen: false).startRecording = false;
-     Provider.of<RecordingProvider>(context,listen: false).eyeinbox=false;
-     await _controller!.stopVideoRecording();  
-     
-     
-
-  
-   
-  
-
-}
 
 _showMessages() {
   setState(() {
@@ -586,21 +499,10 @@ _showMessages() {
         });
 
   Provider.of<RecordingProvider>(context,listen: false).eyeinbox=true;
-
-   
-
   }
 
 }
 
-class VideoProcessor {
-  final FlutterFFmpeg _flutterFFmpeg = FlutterFFmpeg();
-
-  Future<void> cropVideo(String inputPath, String outputPath, int x, int y, int width, int height) async {
-    final arguments = ['-i', inputPath, '-filter:v', 'crop=100:20:20:10', outputPath];
-    await _flutterFFmpeg.executeWithArguments(arguments);
-  }
-}
 
 
 

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:eyedetector/Form.dart';
 import 'package:eyedetector/const/appColor.dart';
 import 'package:eyedetector/faceDetection.dart';
+import 'package:eyedetector/helpers/navigator.dart';
 import 'package:eyedetector/model/user.dart';
 import 'package:eyedetector/provider/video_recording.dart';
 import 'package:flutter/material.dart';
@@ -82,41 +83,30 @@ Widget build(BuildContext context) {
                       bool val3= Provider.of<RecordingProvider>(context, listen: false).startRecording;
                     
                      if( !val2 && !val3){
-                      Navigator.pushReplacement<void, void>(
-                        context,
-                        MaterialPageRoute<void>(
-                          builder: (BuildContext context) =>  FaceDetectorView(userModel: widget.user,),
-                        ),
-                      );
+                      pushAndRemove(context: context, screen:  FaceDetectorView(userModel: widget.user,),);
+
+                 
                      }
                               
                                 
-                    }, icon: Icon(Icons.refresh,color: Colors.white,)),
+                    }, icon:const Icon(Icons.refresh,color: Colors.white,)),
                   ),
-                  SizedBox(width: 10,),
+                  const SizedBox(width: 10,),
                   Container(
                     height: 50,
                     width: 50,
                     color: primaryColor,
                     child: IconButton(onPressed: (){
-                  
-                                  
+                      bool val2= Provider.of<RecordingProvider>(context, listen: false).eyeinbox;
+                      bool val3= Provider.of<RecordingProvider>(context, listen: false).startRecording;
                       
-                    // bool val= Provider.of<RecordingProvider>(context, listen: false).stopRecord;
-                    bool val2= Provider.of<RecordingProvider>(context, listen: false).eyeinbox;
-                    bool val3= Provider.of<RecordingProvider>(context, listen: false).startRecording;
-                     // Provider.of<RecordingProvider>(context, listen: false).eyeinbox = false;
-                    
-                     if(!val2 && !val3){
-                        Navigator.pushReplacement<void, void>(
-                        context,
-                        MaterialPageRoute<void>(
-                          builder: (BuildContext context) =>  FormPage(),
-                        ),
-                      );
-                     }
+                      if(!val2 && !val3){
+
+                          pushAndRemove(context: context, screen:  FormPage());
+                
+                      }
                                    
-                    }, icon: Icon(Icons.check,color: Colors.white,)),
+                    }, icon:const Icon(Icons.check,color: Colors.white,)),
                   ),
                 ],
               )  
@@ -127,5 +117,5 @@ Widget build(BuildContext context) {
     ),
   );
 
-}
+ }
 }

@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:camera/camera.dart';
 import 'package:eyedetector/faceProcess/face_painter.dart';
 import 'package:eyedetector/helpers/toast.dart';
@@ -7,6 +6,7 @@ import 'package:eyedetector/model/user.dart';
 import 'package:eyedetector/provider/video_recording.dart';
 import 'package:eyedetector/faceProcess/view_detector.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:provider/provider.dart';
@@ -24,7 +24,7 @@ class FaceDetectorView extends StatefulWidget {
   State<FaceDetectorView> createState() => _FaceDetectorViewState();
 }
 
-class _FaceDetectorViewState extends State<FaceDetectorView> {
+class _FaceDetectorViewState extends State<FaceDetectorView> with WidgetsBindingObserver {
   final FaceDetector _faceDetector = FaceDetector(
     options: FaceDetectorOptions(
       enableContours: true,
@@ -41,13 +41,39 @@ class _FaceDetectorViewState extends State<FaceDetectorView> {
 
   bool face_out= false;
 
+  bool forground= true;
+
   var _cameraLensDirection = CameraLensDirection.front;
+
+  @override
+  void initState() {
+   
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
 
   @override
   void dispose() {
     _canProcess = false;
     _faceDetector.close();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      setState(() {
+        forground=true;
+      });
+    } else if (state == AppLifecycleState.paused) {
+
+      setState(() {
+        forground=false;
+      });
+      Fluttertoast.cancel(); // Hide any existing toast when the app goes into the background
+    }
   }
 
   @override
@@ -102,8 +128,9 @@ class _FaceDetectorViewState extends State<FaceDetectorView> {
       setState(() {
         face_out=true;
       });
+      
 
-      ToastHelper.showToast(msg: "Fix Your Position", backgroundColor: Colors.green);
+      if(forground) ToastHelper.showToast(msg: "Fix Your Position", backgroundColor: Colors.green);
       facesInTargetArea.add(face);
      
        
@@ -116,7 +143,7 @@ class _FaceDetectorViewState extends State<FaceDetectorView> {
       Provider.of<RecordingProvider>(context,listen: false).startRecording=false;
       // ignore: use_build_context_synchronously
       Provider.of<RecordingProvider>(context,listen: false).stopRecord=true;
-      if(!face_out )ToastHelper.showToast(msg: "Focus your eyes inside the box and wait a few seconds",backgroundColor: Colors.red);
+      if(!face_out &&  forground)ToastHelper.showToast(msg: "Focus your eyes inside the box and wait a few seconds",backgroundColor: Colors.red);
      
     
     }

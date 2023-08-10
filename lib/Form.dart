@@ -52,6 +52,7 @@ class _FormPagetState extends State<FormPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(15.0),
         child: Center(
@@ -89,6 +90,8 @@ class _FormPagetState extends State<FormPage> {
                                     width: MediaQuery.of(context).size.width*0.7,
                                     child:  DropdownButton<String>(
                                       value: selectedItem,
+                                    
+                                      
                                       onChanged: (newValue) {
                                         setState(() {
                                           selectedItem = newValue!;
@@ -111,7 +114,7 @@ class _FormPagetState extends State<FormPage> {
                                               child: Center(
                                                 child: Text(
                                                   value,
-                                                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                                                  style: TextStyle(color: Colors.black, fontSize: 12),
                                                 ),
                                               ),
                                             ),
@@ -142,7 +145,7 @@ class _FormPagetState extends State<FormPage> {
                            style: ElevatedButton.styleFrom(
                             primary: Colors.white,
                                elevation: 0,
-                              padding:const EdgeInsets.symmetric(horizontal: 20, vertical: 12), // Button padding
+                              padding:const EdgeInsets.symmetric(horizontal: 20, vertical: 0), // Button padding
                               shape: RoundedRectangleBorder(
                               
                                 borderRadius: BorderRadius.circular(20.0), // Button border radius
@@ -150,18 +153,18 @@ class _FormPagetState extends State<FormPage> {
                          ),
                           child: Row(
                             children:  [
-                              Icon(Icons.date_range,color: isEmptyBirthday? Colors.red: primaryColor),
+                              Icon(Icons.date_range,color: isEmptyBirthday? Colors.red: primaryColor,size: 16,),
                               const SizedBox(width: 10),
                               birthday.text.isEmpty ?
                               const Text(
                                 'Birth day',
                                 style:
-                                    TextStyle(color: Colors.grey,fontSize: 12),
+                                    TextStyle(color: Colors.grey,fontSize: 14,fontWeight: FontWeight.w400),
                               ):
                               Text(
                                 birthday.text,
                                 style:
-                                    const TextStyle(color: Colors.black,fontSize: 14),
+                                    const TextStyle(color: Colors.black,fontSize: 15,fontWeight: FontWeight.w400),
                               )
                             ],
                           ),
