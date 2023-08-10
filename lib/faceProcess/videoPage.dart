@@ -38,7 +38,7 @@ class _VideoPageState extends State<VideoPage> {
      // ignore: use_build_context_synchronously
      Provider.of<RecordingProvider>(context, listen: false).startRecording = false;
      // ignore: use_build_context_synchronously
-     Provider.of<RecordingProvider>(context, listen: false).eyeinbox = false;
+     Provider.of<RecordingProvider>(context, listen: false).eyesinbox = false;
      // ignore: use_build_context_synchronously
      Provider.of<RecordingProvider>(context,listen: false).stopRecord=true;
   }
@@ -79,7 +79,7 @@ Widget build(BuildContext context) {
                     color: Colors.grey,
                     child: IconButton(
                     onPressed: (){
-                      bool val2= Provider.of<RecordingProvider>(context, listen: false).eyeinbox;
+                      bool val2= Provider.of<RecordingProvider>(context, listen: false).eyesinbox;
                       bool val3= Provider.of<RecordingProvider>(context, listen: false).startRecording;
                     
                      if( !val2 && !val3){
@@ -97,7 +97,7 @@ Widget build(BuildContext context) {
                     width: 50,
                     color: primaryColor,
                     child: IconButton(onPressed: (){
-                      bool val2= Provider.of<RecordingProvider>(context, listen: false).eyeinbox;
+                      bool val2= Provider.of<RecordingProvider>(context, listen: false).eyesinbox;
                       bool val3= Provider.of<RecordingProvider>(context, listen: false).startRecording;
                       
                       if(!val2 && !val3){

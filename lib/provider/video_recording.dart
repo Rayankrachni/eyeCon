@@ -13,20 +13,17 @@ class RecordingProvider extends ChangeNotifier {
   }
 
   bool get startRecording => _startRecording;
+ 
+  bool _eyesinbox=false;
 
-
-
-    bool _eyeinbox=false;
-
-  set eyeinbox(bool value) {
-      _eyeinbox = value;
-    //notifyListeners();
+  set eyesinbox(bool value) {
+      _eyesinbox = value;
+      //notifyListeners();
   }
 
-  bool get eyeinbox => _eyeinbox;
+  bool get eyesinbox => _eyesinbox;
 
-
-   bool _stopRecord=false;
+  bool _stopRecord=false;
 
   set stopRecord(bool value) {
       _stopRecord = value;
@@ -35,19 +32,16 @@ class RecordingProvider extends ChangeNotifier {
 
   bool get stopRecord => _stopRecord;
 
-
-
-   bool _isLoading = false;
+  bool _isLoading = false;
 
   bool get isLoading => _isLoading;
-
 
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
   }
 
- Future<void> sendData(UserModel user, String path) async {
+  Future<void> sendData(UserModel user, String path) async {
   _setLoading(true);
   try {
     // Create a FormData object
@@ -74,13 +68,6 @@ class RecordingProvider extends ChangeNotifier {
     }
   }
   _setLoading(false);
-}
-
-
- 
-
-
-
-
+ }
   
 }

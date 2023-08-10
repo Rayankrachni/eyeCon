@@ -15,6 +15,7 @@ class FormPage extends StatefulWidget {
 }
 
 class _FormPagetState extends State<FormPage> {
+
   TextEditingController name=TextEditingController();
   TextEditingController surname=TextEditingController();
   TextEditingController phone=TextEditingController();
@@ -24,14 +25,11 @@ class _FormPagetState extends State<FormPage> {
 
   UserModel? userModel;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-    String selectedItem = 'male';
+    String selectedItem = 'Male';
     bool isEmptyBirthday=false;
 
-  final List<String> languages = ['male', 'female'];
-
-
-    DateTime selectedDate = DateTime.now();
-
+  final List<String> languages = ['Male', 'Female'];
+  DateTime selectedDate = DateTime.now();
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -48,7 +46,6 @@ class _FormPagetState extends State<FormPage> {
       });
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,22 +60,25 @@ class _FormPagetState extends State<FormPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Text("Complete the Form",style: TextStyle(fontSize: 22,color: primaryColor),),
+                  const Text("Complete the Form",style: TextStyle(fontSize: 24,color: Colors.black,fontWeight:  FontWeight.w500),),
+                  const SizedBox(height: 20,),
+                  const   Text("Please provide the requested information ",      style: TextStyle(fontSize: 16, color: Colors.grey),    ),
                   const SizedBox(height: 40,),
-                  CustomTextFormField(controller: name, prefixIcon: Icons.person, textInputType: TextInputType.text, hintText: 'name',),
+                  CustomTextFormField(controller: name, prefixIcon: Icons.person, textInputType: TextInputType.text, hintText: 'Name',),
                   const SizedBox(height: 20,),
-                  CustomTextFormField(controller: surname, prefixIcon: Icons.person, textInputType: TextInputType.text, hintText: 'surname',),
+                  CustomTextFormField(controller: surname, prefixIcon: Icons.person, textInputType: TextInputType.text, hintText: 'Surname',),
                   const SizedBox(height: 20,),
-                  CustomTextFormField(controller: email, prefixIcon: Icons.email, textInputType: TextInputType.emailAddress, hintText: 'email',),
+                  CustomTextFormField(controller: email, prefixIcon: Icons.email, textInputType: TextInputType.emailAddress, hintText: 'Email',),
                   const SizedBox(height: 20,),
-                  CustomTextFormField(controller: phone, prefixIcon: Icons.phone, textInputType: TextInputType.phone, hintText: 'phone',),
+                  CustomTextFormField(controller: phone, prefixIcon: Icons.phone, textInputType: TextInputType.phone, hintText: 'Phone',),
                   const SizedBox(height: 20,),
-                    Container(
-                      width: MediaQuery.of(context).size.width*0.9,
+                  Container(
+                      width: MediaQuery.of(context).size.width*0.95,
                              decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20.0),
+                            borderRadius: BorderRadius.circular(10.0),
+                             color: Colors.white,
                                 border: Border.all(
-                                  color: primaryColor
+                                  color: textfieldbg
                                 )
                               ),
                             child: Center(
@@ -128,14 +128,14 @@ class _FormPagetState extends State<FormPage> {
                               ),
                             
                             )),
-                            const SizedBox(height: 20,),
-                 
-                 Container(
-                        width: MediaQuery.of(context).size.width*0.9,
+                  const SizedBox(height: 20,),       
+                  Container(
+                        width: MediaQuery.of(context).size.width*0.95,
                         decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20.0),
+                          color: Colors.white,
+                            borderRadius: BorderRadius.circular(10.0),
                           border: Border.all(
-                            color:isEmptyBirthday? Colors.red: primaryColor
+                            color:isEmptyBirthday? Colors.red: textfieldbg
                           )
                         ),
                          child: ElevatedButton(
@@ -169,11 +169,10 @@ class _FormPagetState extends State<FormPage> {
                             ],
                           ),
                                              ),
-                       ),
-                       
-                       SizedBox(height: 20,),
+                       ),              
+                  const SizedBox(height: 40,),
                   SizedBox(
-                    width: MediaQuery.of(context).size.width*0.9,
+                    width: MediaQuery.of(context).size.width,
                     child: ElevatedButton(onPressed: (){
                       if(_formKey.currentState!.validate() ){
                           if( birthday.text.isNotEmpty){
@@ -199,15 +198,14 @@ class _FormPagetState extends State<FormPage> {
                      
                      }, 
                        style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12), // Button padding
+                        padding: EdgeInsets.symmetric(horizontal: 20,vertical: 15), // Button padding
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0), // Button border radius
+                          borderRadius: BorderRadius.circular(10.0), // Button border radius
                         ),
-  ),
+                        primary: primaryColor),
                      
                      child: Text("Next")),
-                  )     
-                  
+                  )        
                 ],
               ),
             ),

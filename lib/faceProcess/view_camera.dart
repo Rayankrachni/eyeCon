@@ -447,7 +447,7 @@ Future<void> _recordVideo() async {
 
       if (startVideo) {
          Provider.of<RecordingProvider>(context, listen: false).startRecording = false;
-        Provider.of<RecordingProvider>(context, listen: false).eyeinbox = false;
+        Provider.of<RecordingProvider>(context, listen: false).eyesinbox = false;
          
 
         final file = await _controller!.stopVideoRecording(); 
@@ -498,7 +498,7 @@ _showMessages() {
           messag2 = true;
         });
 
-  Provider.of<RecordingProvider>(context,listen: false).eyeinbox=true;
+  Provider.of<RecordingProvider>(context,listen: false).eyesinbox=true;
   }
 
 }

@@ -100,7 +100,7 @@ class _FaceDetectorViewState extends State<FaceDetectorView> with WidgetsBinding
     });
     
        
-    final bool startDetection = Provider.of<RecordingProvider>(context, listen: false).eyeinbox;
+    final bool startDetection = Provider.of<RecordingProvider>(context, listen: false).eyesinbox;
     final faces = await _faceDetector.processImage(inputImage);
 
 

@@ -29,76 +29,87 @@ class CustomTextFormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-
-      validator: (value) {
-        if (value!.isEmpty) {
-          return 'Empty-field';
-        }
-        return null;
-      },
-      keyboardType: textInputType,
-      textInputAction: TextInputAction.next,
-
-      style:const TextStyle(color: Colors.black),
-      obscureText: obscureText,
-      maxLines: lines,
-      decoration: InputDecoration(
-        hintText: hintText,
-
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 5.0,
-          horizontal: 20.0,
-        ),
-        prefixIcon: Icon(
-          prefixIcon,
-          color: iconColor,
-          size: 20,
-        ),
-        hintStyle: const TextStyle(
-          fontFamily: 'myriad',
-          
-          fontSize: 14,
-          color: Colors.grey
-        ),
-
-        suffix: suffixIcon != null
-            ? InkWell(
-              onTap: onTapSuffix,
-              child: Icon(
-                suffixIcon,
-                color: primaryColor,
-                size: 20,
-              ),
-            )
-            : null,
-        enabledBorder:const OutlineInputBorder(
-          borderRadius:BorderRadius.all(Radius.circular(20)),
-          borderSide: BorderSide(
-            width: 1,
-            color: primaryColor,
+    return Container(
+      decoration:const BoxDecoration(
+        //color: textfieldbg.withOpacity(0.2),
+        
+         borderRadius:BorderRadius.all(Radius.circular(10)),
+      ),
+      
+      child: TextFormField(
+        controller: controller,
+    
+        validator: (value) {
+          if (value!.isEmpty) {
+            
+            return 'Complete the field';
+            
+          }
+          return null;
+        },
+        keyboardType: textInputType,
+        textInputAction: TextInputAction.next,
+    
+        style:const TextStyle(color: Colors.black),
+        obscureText: obscureText,
+        maxLines: lines,
+        
+        decoration: InputDecoration(
+          hintText: hintText,
+    
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 5.0,
+            horizontal: 20.0,
           ),
-        ),
-        focusedErrorBorder:const OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(20)),
-          borderSide:  BorderSide(
-            width: 1,
-            color: Colors.red,
+          prefixIcon: Icon(
+            prefixIcon,
+            color: iconColor,
+            size: 17,
           ),
-        ),
-        focusedBorder: const OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(20)),
-          borderSide: BorderSide(
-            width: 1,
-            color: primaryColor,
+          hintStyle: const TextStyle(
+            fontFamily: 'myriad',
+            
+            fontSize: 14,
+            color: Colors.grey
           ),
-        ),
-        errorBorder:const OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(20),),
-          borderSide:  BorderSide(
-            width: 1,
-            color: Colors.red,
+    
+          suffix: suffixIcon != null
+              ? InkWell(
+                onTap: onTapSuffix,
+                child: Icon(
+                  suffixIcon,
+                  color: primaryColor,
+                  size: 20,
+                ),
+              )
+              : null,
+          enabledBorder:const OutlineInputBorder(
+            borderRadius:BorderRadius.all(Radius.circular(10)),
+            borderSide: BorderSide(
+              width: 1,
+              color: textfieldbg,
+            ),
+          ),
+          focusedErrorBorder:const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+            borderSide:  BorderSide(
+              width: 1,
+              color: Colors.red,
+            ),
+          ),
+          focusedBorder: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+            borderSide: BorderSide(
+              width: 1,
+              color: primaryColor,
+            ),
+          ),
+          errorBorder:const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10),),
+            borderSide:  BorderSide(
+              width: 1,
+              color: Colors.red,
+            ),
           ),
         ),
       ),
