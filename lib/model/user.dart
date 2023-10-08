@@ -6,6 +6,7 @@ class UserModel {
   final String phone;
   final String gender;
   final String birthday;
+  final String eyeColor;
 
   UserModel({
     required this.name,
@@ -14,6 +15,7 @@ class UserModel {
     required this.phone,
     required this.gender,
     required this.birthday,
+    required this.eyeColor,
   });
 
 
@@ -30,6 +32,7 @@ class UserModel {
     phone: json['phone'].toString(),
     birthday: json['birthday'].toString(),
     gender: json['gender'].toString(),
+    eyeColor: json['eyeColor'].toString(),
   
   );
 
@@ -42,6 +45,7 @@ class UserModel {
       'phone': phone,
       'gender':gender,
       'birthday':birthday,
+      'eyeColor':eyeColor
     };
   }
 }

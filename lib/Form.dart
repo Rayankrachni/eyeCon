@@ -1,11 +1,14 @@
 
 
 import 'package:eyedetector/const/appColor.dart';
-import 'package:eyedetector/faceDetection.dart';
-import 'package:eyedetector/helpers/navigator.dart';
 import 'package:eyedetector/model/user.dart';
+import 'package:eyedetector/provider/userProvider.dart';
 import 'package:eyedetector/widget/textField.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'const/appConsts.dart';
+import 'helpers/sharedPre.dart';
 
 class FormPage extends StatefulWidget {
   const FormPage({super.key});
@@ -26,9 +29,12 @@ class _FormPagetState extends State<FormPage> {
   UserModel? userModel;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
     String selectedItem = 'Male';
+
     bool isEmptyBirthday=false;
 
-  final List<String> languages = ['Male', 'Female'];
+  final List<String> genderList = ['Male', 'Female'];
+  final List<String> colorEyeList = ['Unknown', 'Black', 'Blue', 'Brown', 'Dichromatic', 'Gray', 'Green', 'Hazel', 'Maroon', 'Pink'];
+  String selectedColor = 'Green';
   DateTime selectedDate = DateTime.now();
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -46,8 +52,13 @@ class _FormPagetState extends State<FormPage> {
       });
     }
   }
+
+
   @override
   Widget build(BuildContext context) {
+    final UserProvider provider = Provider.of<UserProvider>(context);
+
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Padding(
@@ -58,20 +69,82 @@ class _FormPagetState extends State<FormPage> {
             child: SingleChildScrollView(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Complete the Form",style: TextStyle(fontSize: 24,color: Colors.black,fontWeight:  FontWeight.w500),),
+
+                  const Center(child:  Text("Login Form",style: TextStyle(fontSize: 24,color: Colors.black,fontWeight:  FontWeight.w500),)),
                   const SizedBox(height: 20,),
-                  const   Text("Please provide the requested information ",      style: TextStyle(fontSize: 16, color: Colors.grey),    ),
+                  const Center(child:    Text("Kindly provide the required information to log in ",      style: TextStyle(fontSize: 14, color: Colors.grey),    )),
                   const SizedBox(height: 40,),
                   CustomTextFormField(controller: name, prefixIcon: Icons.person, textInputType: TextInputType.text, hintText: 'Name',),
-                  const SizedBox(height: 20,),
+                  //const SizedBox(height: 20,),
                   CustomTextFormField(controller: surname, prefixIcon: Icons.person, textInputType: TextInputType.text, hintText: 'Surname',),
-                  const SizedBox(height: 20,),
+                 // const SizedBox(height: 20,),
                   CustomTextFormField(controller: email, prefixIcon: Icons.email, textInputType: TextInputType.emailAddress, hintText: 'Email',),
-                  const SizedBox(height: 20,),
-                  CustomTextFormField(controller: phone, prefixIcon: Icons.phone, textInputType: TextInputType.phone, hintText: 'Phone',),
-                  const SizedBox(height: 20,),
+
+                 // CustomTextFormField(controller: phone, prefixIcon: Icons.phone, textInputType: TextInputType.phone, hintText: 'Phone',),
+                  const Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Text("Eye Color"),
+                  ),
+                  Container(
+                      width: MediaQuery.of(context).size.width*0.95,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10.0),
+                          color: Colors.white,
+                          border: Border.all(
+                              color: textfieldbg
+                          )
+                      ),
+                      child: Center(
+                        child: Row(
+                          children: [
+                            const SizedBox(width: 10,),
+                            Icon(Icons.trending_up,color: primaryColor,size: 20,),
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width*0.7,
+                              child:  DropdownButton<String>(
+                                value: selectedColor,
+
+
+                                onChanged: (newValue) {
+                                  setState(() {
+                                    selectedColor = newValue!;
+                                  });
+                                },
+                                hint: const Text("Eye Color"),
+                                icon: Icon(Icons.abc, color: Colors.transparent), // Remove the icon
+                                underline: Container(),
+                                padding: const EdgeInsets.only(left: 0, right: 20, top: 0),
+                                alignment: Alignment.center,
+                                // Set a value greater than or equal to kMinInteractiveDimension
+                                itemHeight: kMinInteractiveDimension,
+                                menuMaxHeight: 200,
+                                items: colorEyeList.map((String value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: SizedBox(
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 8.0,),
+                                        child: Center(
+                                          child: Text(
+                                            value,
+                                            style: TextStyle(color: Colors.black, fontSize: 12),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+
+                            ),
+                          ],
+                        ),
+
+                      )),
+
+                 /* const SizedBox(height: 20,),
                   Container(
                       width: MediaQuery.of(context).size.width*0.95,
                              decoration: BoxDecoration(
@@ -83,15 +156,15 @@ class _FormPagetState extends State<FormPage> {
                               ),
                             child: Center(
                               child: Row(
-                                children: [ 
+                                children: [
                                   const SizedBox(width: 10,),
                                   Icon(Icons.trending_up,color: primaryColor,size: 20,),
                                   SizedBox(
                                     width: MediaQuery.of(context).size.width*0.7,
                                     child:  DropdownButton<String>(
                                       value: selectedItem,
-                                    
-                                      
+
+
                                       onChanged: (newValue) {
                                         setState(() {
                                           selectedItem = newValue!;
@@ -105,7 +178,7 @@ class _FormPagetState extends State<FormPage> {
                                       // Set a value greater than or equal to kMinInteractiveDimension
                                       itemHeight: kMinInteractiveDimension,
                                       menuMaxHeight: 200,
-                                      items: languages.map((String value) {
+                                      items: genderList.map((String value) {
                                         return DropdownMenuItem<String>(
                                           value: value,
                                           child: SizedBox(
@@ -126,9 +199,12 @@ class _FormPagetState extends State<FormPage> {
                                   ),
                                 ],
                               ),
-                            
-                            )),
-                  const SizedBox(height: 20,),       
+
+                            )),*/
+                  const Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Text("Birth Date"),
+                  ),
                   Container(
                         width: MediaQuery.of(context).size.width*0.95,
                         decoration: BoxDecoration(
@@ -143,11 +219,11 @@ class _FormPagetState extends State<FormPage> {
 
 
                            style: ElevatedButton.styleFrom(
-                            primary: Colors.white,
+                            backgroundColor: Colors.white,
                                elevation: 0,
                               padding:const EdgeInsets.symmetric(horizontal: 20, vertical: 0), // Button padding
                               shape: RoundedRectangleBorder(
-                              
+
                                 borderRadius: BorderRadius.circular(20.0), // Button border radius
                              ),
                          ),
@@ -159,7 +235,13 @@ class _FormPagetState extends State<FormPage> {
                               const Text(
                                 'Birth day',
                                 style:
-                                    TextStyle(color: Colors.grey,fontSize: 14,fontWeight: FontWeight.w400),
+                                 TextStyle(
+                                    fontFamily: 'myriad',
+
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.normal,
+                                    color: Colors.grey
+                                ),
                               ):
                               Text(
                                 birthday.text,
@@ -169,43 +251,46 @@ class _FormPagetState extends State<FormPage> {
                             ],
                           ),
                                              ),
-                       ),              
+                       ),
                   const SizedBox(height: 40,),
                   SizedBox(
                     width: MediaQuery.of(context).size.width,
                     child: ElevatedButton(onPressed: (){
-                      if(_formKey.currentState!.validate() ){
-                          if( birthday.text.isNotEmpty){
-                              userModel = UserModel(
+                      if(_formKey.currentState!.validate() && birthday.text.isNotEmpty){
+
+                       userModel = UserModel(
                         name: name.text,
                         email: email.text,
                         surname: surname.text,
                         phone: phone.text,
                         gender: selectedItem,
                         birthday: birthday.text,
+                        eyeColor: selectedColor
                       );
-                      push(context: context, screen: FaceDetectorView(userModel: userModel,));
-                         
-                          }
-                          else {
-                            setState(() {
-                              isEmptyBirthday=true;
-                            });
-                          }
-                      
+
+                              provider.register(userModel!, context) ;
+                    //
+
+
+
+
+                      }    else {
+                        setState(() {
+                          isEmptyBirthday=true;
+                        });
                       }
 
-                     
-                     }, 
+
+                     },
                        style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(horizontal: 20,vertical: 15), // Button padding
+                        padding: EdgeInsets.symmetric(horizontal: 20,vertical: 15),
+                           backgroundColor: Colors.blueAccent, // Button padding
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10.0), // Button border radius
-                        ),
-                        primary: primaryColor),
-                     
-                     child: Text("Next")),
-                  )        
+                        )),
+
+                     child: provider.isLoading?Center(child: CircularProgressIndicator()):Text("Login",style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),)),
+                  )
                 ],
               ),
             ),
@@ -214,4 +299,6 @@ class _FormPagetState extends State<FormPage> {
       ),
     );
   }
+
+
 }

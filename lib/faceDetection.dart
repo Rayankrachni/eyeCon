@@ -182,7 +182,6 @@ class _FaceDetectorViewState extends State<FaceDetectorView> with WidgetsBinding
     _isBusy = false;
     if (mounted) {
 
-      //Provider.of<RecordingProvider>(context, listen: false).eyeinbox=false;
       setState(() {});
     }
   }

@@ -6,11 +6,13 @@ import 'package:eyedetector/const/appConsts.dart';
 import 'package:eyedetector/helpers/navigator.dart';
 import 'package:eyedetector/helpers/toast.dart';
 import 'package:eyedetector/model/user.dart';
+import 'package:eyedetector/provider/contentHtml_provider.dart';
 import 'package:eyedetector/provider/video_recording.dart';
 import 'package:eyedetector/faceProcess/videoPage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:google_mlkit_commons/google_mlkit_commons.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -48,6 +50,7 @@ class _CameraViewState extends State<CameraView> {
   final FlutterFFmpeg _flutterFFmpeg = FlutterFFmpeg();
   CameraController? _controller;
   int _cameraIndex = -1;
+  int index=0;
   double _currentZoomLevel = initialZoom;
   double _minAvailableZoom = 1.0;
   double _maxAvailableZoom = 1.0;
@@ -58,20 +61,37 @@ class _CameraViewState extends State<CameraView> {
   bool _changingCameraLens = false;
   bool _isRecording = false;
   bool startVideo= false;
+  bool _loadingVideo= false;
+
+
   
   double? width;
   bool messag1=false;
   bool messag2=false;
 
   RecordingProvider provider =RecordingProvider();
-  
+  final ContentHtmlProvider provide = ContentHtmlProvider();
+  bool loader = true;
+  Key webViewKey = GlobalKey();
 
+
+  Future<void> fetchData() async {
+    try {
+      await provide.fetchData();
+      setState(() {
+        loader = false; // Set loader to false when data is fetched
+      });
+    } catch (error) {
+      // Handle any potential errors here
+      print("Error fetching data: $error");
+    }
+  }
 
 
   @override
   void initState() {
     super.initState();
-    
+      fetchData();
       _initialize();
      _showMessages();
     
@@ -104,6 +124,54 @@ void _initialize() async {
   @override
   Widget build(BuildContext context) {
     return Scaffold(body: _liveFeedBody());
+  }
+
+  int totalDuration=0;
+// Initialize the index variable
+
+  void fetchDatashow() async {
+
+    for (int i = 0; i < provide.items.length; i++) {
+      totalDuration += provide.items[i].duration!;
+
+
+      if(i==0){
+        provide.index=0;
+        setState(() {
+        webViewKey = GlobalKey(); // Increment the index variable
+      });}
+
+        await Future.delayed(Duration(seconds: provide.items[i].duration!), () {
+          if (provide.index < provide.items.length - 1) {
+            provide.index++;
+            setState(() {
+              webViewKey = GlobalKey(); // Increment the index variable
+            });
+          }
+
+          // Check if it's the last item and set startVideo to true
+
+        });
+
+
+    }
+
+    setState(() {
+      startVideo = true;
+      _loadingVideo = true;
+      _isRecording=false;
+    });
+  }
+
+  // Create a method to build the InAppWebView widget
+  Widget buildWebView(String path) {
+    print("web view $path");
+    return InAppWebView(
+      key: webViewKey,
+      initialUrlRequest: URLRequest(
+        url: Uri.parse("http://eyes.live.net.mk/mmcontent/$path"),
+      ),
+    );
   }
 
   Widget _liveFeedBody() {
@@ -169,17 +237,37 @@ void _initialize() async {
         Positioned(
           top: 10,
           right: 0,
-          child: Container(
+          left: 0,
+          child:  Container(
+            color: Colors.black,
+            height: MediaQuery.of(context).size.height,
+            width:MediaQuery.of(context).size.width,
+            child:InAppWebView(
+                    key: webViewKey,
+                    initialUrlRequest: URLRequest(
+                    url: Uri.parse("http://eyes.live.net.mk/mmcontent/${provide.items[provide.index].fileName!}"),
+                    ),
+                    )),
+        ),
+      if(_loadingVideo)
+        Positioned(
+          top: 10,
+          right: 0,
+          left: 0,
+          child:  Container(
             color: Colors.white,
             height: MediaQuery.of(context).size.height,
             width:MediaQuery.of(context).size.width,
-            child:const  Column(
+            child:const Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
 
-              
-            ],)   ),
+                CircularProgressIndicator(),
+                SizedBox(height: 10,),
+                Text(" Video Processing"),
+              ],
+            ) ),
         ),
       ],
     ),
@@ -208,42 +296,6 @@ void _initialize() async {
 
 
 
-  Widget _detectionViewModeToggle() => Positioned(
-        bottom: 8,
-        left: 8,
-        child: SizedBox(
-          height: 50.0,
-          width: 50.0,
-          child: FloatingActionButton(
-            heroTag: Object(),
-            onPressed: widget.onDetectorViewModeChanged,
-            backgroundColor: Colors.black54,
-            child:const Icon(
-              Icons.photo_library_outlined,
-              size: 25,
-            ),
-          ),
-        ),
-      );
- 
- 
-  Widget _videoRecording() => Positioned(
-        bottom: 30,
-        left:5,
-        child: SizedBox(
-          height:100.0,
-          width:400.0,
-          child: Padding(
-            padding: const EdgeInsets.all(25),
-            child: ElevatedButton(
-             
-              child: Icon(_isRecording ? Icons.stop : Icons.circle ,size: 30,),
-              onPressed: () => _recordVideo(),
-            ),
-          ),
-        ),
-      );    
-
   Widget _switchLiveCameraToggle() => Positioned(
         bottom: 8,
         right: 8,
@@ -265,54 +317,6 @@ void _initialize() async {
       );
 
 
-  Widget _exposureControl() => Positioned(
-        top: 40,
-        right: 8,
-        child: ConstrainedBox(
-          constraints:const BoxConstraints(
-            maxHeight: 250,
-          ),
-          child: Column(children: [
-            Container(
-              width: 55,
-              decoration: BoxDecoration(
-                color: Colors.black54,
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Center(
-                  child: Text(
-                    '${_currentExposureOffset.toStringAsFixed(1)}x',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: RotatedBox(
-                quarterTurns: 3,
-                child: SizedBox(
-                  height: 30,
-                  child: Slider(
-                    value: _currentExposureOffset,
-                    min: _minAvailableExposureOffset,
-                    max: _maxAvailableExposureOffset,
-                    activeColor: Colors.white,
-                    inactiveColor: Colors.white30,
-                    onChanged: (value) async {
-                      setState(() {
-                        _currentExposureOffset = value;
-                      });
-                      await _controller?.setExposureOffset(value);
-                    },
-                  ),
-                ),
-              ),
-            )
-          ]),
-        ),
-      );
 
   Future _startLiveFeed() async {
     final camera = _cameras[_cameraIndex];
@@ -438,8 +442,7 @@ InputImage? _inputImageFromCameraImage(CameraImage image) {
   }
 
 bool recordingInProgress = false;
-  
-  
+
 Future<void> _recordVideo() async {
   if (!recordingInProgress) {
     try {
@@ -453,10 +456,16 @@ Future<void> _recordVideo() async {
         final file = await _controller!.stopVideoRecording(); 
             setState(() {
              startVideo = false;
-           });
+
+
+
+
+            });
+        print("stop reacording");
+        String  timestamp = DateTime.now().millisecondsSinceEpoch.toString();   
        
         final croppedFilePath = await getTemporaryDirectory().then((dir) {
-          return '${dir.path}/cropped_video.mp4';
+          return '${dir.path}/$timestamp.mp4';
         });
 
       const croppingHeight = 150; 
@@ -464,8 +473,11 @@ Future<void> _recordVideo() async {
             .execute("-y -i ${file.path} -filter:v crop=in_w:$croppingHeight:0:280 -c:a copy $croppedFilePath")
             .then((rc) => print("FFmpeg process exited with rc $rc"));
          
-
-        pushAndRemove(context: context, screen: VideoPage(filePath: croppedFilePath,user: widget.user!,), );
+        setState(() {
+          _loadingVideo = false;
+        });
+        print(croppedFilePath);
+       pushAndRemove(context: context, screen: VideoPage(filePath: croppedFilePath,user: widget.user!,), );
       } else {
         if (!_controller!.value.isRecordingVideo) {
           await _controller!.prepareForVideoRecording();
@@ -475,11 +487,12 @@ Future<void> _recordVideo() async {
 
             _isRecording = true;
           });
+
           ToastHelper.showToast(msg:"Recording in progress. Adjuste your focus, please." , backgroundColor: Colors.green);
-        
-          Timer(const Duration(seconds: durationOfRecording), () {
-                 setState(() => startVideo = true);  
-            });
+          fetchDatashow();
+
+
+
         }
       }
     } finally {
@@ -487,10 +500,6 @@ Future<void> _recordVideo() async {
     }
   }
 }
-
-
-
-
 
 _showMessages() {
   setState(() {

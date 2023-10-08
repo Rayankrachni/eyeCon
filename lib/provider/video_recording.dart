@@ -45,6 +45,7 @@ class RecordingProvider extends ChangeNotifier {
   _setLoading(true);
   try {
     // Create a FormData object
+    // ignore: unused_local_variable
     FormData formData = FormData.fromMap({
       "title": user.name,
       "surname": user.surname,

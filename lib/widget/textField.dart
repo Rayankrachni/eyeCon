@@ -29,90 +29,100 @@ class CustomTextFormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration:const BoxDecoration(
-        //color: textfieldbg.withOpacity(0.2),
-        
-         borderRadius:BorderRadius.all(Radius.circular(10)),
-      ),
-      
-      child: TextFormField(
-        controller: controller,
-    
-        validator: (value) {
-          if (value!.isEmpty) {
-            
-            return 'Complete the field';
-            
-          }
-          return null;
-        },
-        keyboardType: textInputType,
-        textInputAction: TextInputAction.next,
-    
-        style:const TextStyle(color: Colors.black),
-        obscureText: obscureText,
-        maxLines: lines,
-        
-        decoration: InputDecoration(
-          hintText: hintText,
-    
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: 5.0,
-            horizontal: 20.0,
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Text(hintText),
+        ),
+        Container(
+          decoration:const BoxDecoration(
+            //color: textfieldbg.withOpacity(0.2),
+
+             borderRadius:BorderRadius.all(Radius.circular(10)),
           ),
-          prefixIcon: Icon(
-            prefixIcon,
-            color: iconColor,
-            size: 17,
-          ),
-          hintStyle: const TextStyle(
-            fontFamily: 'myriad',
-            
-            fontSize: 14,
-            color: Colors.grey
-          ),
-    
-          suffix: suffixIcon != null
-              ? InkWell(
-                onTap: onTapSuffix,
-                child: Icon(
-                  suffixIcon,
-                  color: primaryColor,
-                  size: 20,
+
+          child: TextFormField(
+            controller: controller,
+
+            validator: (value) {
+              if (value!.isEmpty) {
+
+                return 'Complete the field';
+
+              }
+              return null;
+            },
+            keyboardType: textInputType,
+            textInputAction: TextInputAction.next,
+
+            style:const TextStyle(color: Colors.black),
+            obscureText: obscureText,
+            maxLines: lines,
+
+            decoration: InputDecoration(
+              hintText: hintText,
+
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 5.0,
+                horizontal: 20.0,
+              ),
+              prefixIcon: Icon(
+                prefixIcon,
+                color: iconColor,
+                size: 17,
+              ),
+              hintStyle: const TextStyle(
+                fontFamily: 'myriad',
+
+                fontSize: 12,
+                color: Colors.grey
+              ),
+
+              suffix: suffixIcon != null
+                  ? InkWell(
+                    onTap: onTapSuffix,
+                    child: Icon(
+                      suffixIcon,
+                      color: primaryColor,
+                      size: 20,
+                    ),
+                  )
+                  : null,
+              enabledBorder:const OutlineInputBorder(
+                borderRadius:BorderRadius.all(Radius.circular(10)),
+                borderSide: BorderSide(
+                  width: 1,
+                  color: textfieldbg,
                 ),
-              )
-              : null,
-          enabledBorder:const OutlineInputBorder(
-            borderRadius:BorderRadius.all(Radius.circular(10)),
-            borderSide: BorderSide(
-              width: 1,
-              color: textfieldbg,
-            ),
-          ),
-          focusedErrorBorder:const OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(10)),
-            borderSide:  BorderSide(
-              width: 1,
-              color: Colors.red,
-            ),
-          ),
-          focusedBorder: const OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(10)),
-            borderSide: BorderSide(
-              width: 1,
-              color: primaryColor,
-            ),
-          ),
-          errorBorder:const OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(10),),
-            borderSide:  BorderSide(
-              width: 1,
-              color: Colors.red,
+              ),
+              focusedErrorBorder:const OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+                borderSide:  BorderSide(
+                  width: 1,
+                  color: Colors.red,
+                ),
+              ),
+              focusedBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+                borderSide: BorderSide(
+                  width: 1,
+                  color: primaryColor,
+                ),
+              ),
+              errorBorder:const OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(10),),
+                borderSide:  BorderSide(
+                  width: 1,
+                  color: Colors.red,
+                ),
+              ),
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 }
