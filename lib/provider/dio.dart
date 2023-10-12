@@ -7,9 +7,7 @@ class ApiProvider {
   ApiProvider()
       : _dio = Dio(BaseOptions(
           baseUrl: "http://eyes.live.net.mk/api",
-          headers: {
-            'Content-Type': 'application/json',
-          },
+
         ));
 
   Future<Response> registerUser(UserModel user) {
@@ -24,8 +22,13 @@ class ApiProvider {
     });
   }
 
+ Future<Response> uploadVideoFile(String userId,FormData formData) {
 
+  return _dio.post('/MobileUser/Upload/db92236a-1a00-47db-910a-e52d88ddb15d', data: formData,options: Options(headers: {}));
 
+}
 
-
+  Future<Response> getData() {
+    return _dio.get('/MobileUser/prescription/0');
+  }
 }

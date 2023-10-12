@@ -24,13 +24,13 @@ class CameraView extends StatefulWidget {
 
   CameraView(
       {Key? key,
-      required this.customPaint,
-      required this.onImage,
-      required this.user,
-      this.onCameraFeedReady,
-      this.onDetectorViewModeChanged,
-      this.onCameraLensDirectionChanged,
-      this.initialCameraLensDirection = CameraLensDirection.back})
+        required this.customPaint,
+        required this.onImage,
+        required this.user,
+        this.onCameraFeedReady,
+        this.onDetectorViewModeChanged,
+        this.onCameraLensDirectionChanged,
+        this.initialCameraLensDirection = CameraLensDirection.back})
       : super(key: key);
 
   final CustomPaint? customPaint;
@@ -64,7 +64,7 @@ class _CameraViewState extends State<CameraView> {
   bool _loadingVideo= false;
 
 
-  
+
   double? width;
   bool messag1=false;
   bool messag2=false;
@@ -91,39 +91,40 @@ class _CameraViewState extends State<CameraView> {
   @override
   void initState() {
     super.initState();
-      fetchData();
-      _initialize();
-     _showMessages();
-    
+    fetchData();
+    _initialize();
+    _showMessages();
+
   }
 
-void _initialize() async {
-  if (_cameras.isEmpty) {
-    _cameras = await availableCameras();
-  }
-  
-  for (var i = 0; i < _cameras.length; i++) {
-    if (_cameras[i].lensDirection == widget.initialCameraLensDirection) {
-      _cameraIndex = i;
-      break;
+  void _initialize() async {
+    if (_cameras.isEmpty) {
+      _cameras = await availableCameras();
+    }
+
+    for (var i = 0; i < _cameras.length; i++) {
+      if (_cameras[i].lensDirection == widget.initialCameraLensDirection) {
+        _cameraIndex = i;
+        break;
+      }
+    }
+
+    if (_cameraIndex != -1) {
+      _startLiveFeed();
     }
   }
-  
-  if (_cameraIndex != -1) {
-    _startLiveFeed();
-  }
-}
 
   @override
   void dispose() {
     _stopLiveFeed();
-   
+
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: _liveFeedBody());
+    final RecordingProvider recordingProvider = context.read<RecordingProvider>();
+    return Scaffold(body: _liveFeedBody(recordingProvider));
   }
 
   int totalDuration=0;
@@ -138,20 +139,20 @@ void _initialize() async {
       if(i==0){
         provide.index=0;
         setState(() {
-        webViewKey = GlobalKey(); // Increment the index variable
-      });}
+          webViewKey = GlobalKey(); // Increment the index variable
+        });}
 
-        await Future.delayed(Duration(seconds: provide.items[i].duration!), () {
-          if (provide.index < provide.items.length - 1) {
-            provide.index++;
-            setState(() {
-              webViewKey = GlobalKey(); // Increment the index variable
-            });
-          }
+      await Future.delayed(Duration(seconds:provide.items[i].duration!), () {
+        if (provide.index < provide.items.length - 1) {
+          provide.index++;
+          setState(() {
+            webViewKey = GlobalKey(); // Increment the index variable
+          });
+        }
 
-          // Check if it's the last item and set startVideo to true
+        // Check if it's the last item and set startVideo to true
 
-        });
+      });
 
 
     }
@@ -171,150 +172,158 @@ void _initialize() async {
       initialUrlRequest: URLRequest(
         url: Uri.parse("http://eyes.live.net.mk/mmcontent/$path"),
       ),
+      onLoadError: (controller, url, code, message) {
+        print("WebView error: $code, $message");
+        // Handle the error here, such as displaying a message to the user.
+      },
     );
   }
 
-  Widget _liveFeedBody() {
+  Widget _liveFeedBody(RecordingProvider provider) {
     if (_cameras.isEmpty) return Container();
     if (_controller == null) return Container();
     if (_controller?.value.isInitialized == false) return Container();
-     if(!messag1)
-          // ignore: curly_braces_in_flow_control_structures
-          ToastHelper.showToast(msg: "Fix Your Phone Please",   backgroundColor: Colors.black);
-    
-     if(Provider.of<RecordingProvider>(context,listen: false).startRecording==true){_recordVideo();}
-     return Container(
+    if(!messag1)
+      // ignore: curly_braces_in_flow_control_structures
+      ToastHelper.showToast(msg: "Fix Your Phone Please",   backgroundColor: Colors.black);
+
+    if(provider.startRecording==true){_recordVideo(provider);}
+    return Container(
       color: Colors.black,
       child: Stack(
         fit: StackFit.expand,
         children: <Widget>[
-         Center(
-    child: _changingCameraLens 
-            ?const  Center(child:  Text('Changing camera lens'),)
-            : CameraPreview( _controller!, child: widget.customPaint, ),),
-            _backButton(),
-            _switchLiveCameraToggle(),
-          if (messag2)  
-          Positioned(
-            top: 100,
-            right: 20,
-            left: 20,
-            child: Container(
-            
-              height: 40,
-              width:350,
-              decoration: BoxDecoration(
-                color: Colors.black,
-                borderRadius: BorderRadius.circular(20)  ),
-              child:const Center(child:  Text("Ensure that your eyes are within the assigned region",style: TextStyle(color: Colors.white),)
-            ),
-          ),
-          ),
-      
-      
-          if (messag2)  
-          Positioned(
-            top: 200,
-            right: 20,
-            left: 20,
-            child: Container(
-           
-            height: 100,
-            width:MediaQuery.of(context).size.width*0.7,
-            decoration: BoxDecoration(
-               color: Colors.transparent,
-              border: Border.all(
-                width: 2,
-                color: Colors.yellow,
+          Center(
+            child: _changingCameraLens
+                ?const  Center(child:  Text('Changing camera lens'),)
+                : CameraPreview( _controller!, child: widget.customPaint, ),),
+          _backButton(),
+          _switchLiveCameraToggle(),
+          if (messag2)
+            Positioned(
+              top: 100,
+              right: 20,
+              left: 20,
+              child: Container(
+
+                height: 40,
+                width:350,
+                decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(20)  ),
+                child:const Center(child:  Text("Ensure that your eyes are within the assigned region",style: TextStyle(color: Colors.white),)
+                ),
               ),
             ),
-        ),
-      ),
 
-         
-       
-      if(_isRecording  )
-        Positioned(
-          top: 10,
-          right: 0,
-          left: 0,
-          child:  Container(
-            color: Colors.black,
-            height: MediaQuery.of(context).size.height,
-            width:MediaQuery.of(context).size.width,
-            child:InAppWebView(
+
+          if (messag2)
+            Positioned(
+              top: 200,
+              right: 20,
+              left: 20,
+              child: Container(
+
+                height: 100,
+                width:MediaQuery.of(context).size.width*0.7,
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  border: Border.all(
+                    width: 2,
+                    color: Colors.yellow,
+                  ),
+                ),
+              ),
+            ),
+
+
+
+          if(_isRecording  )
+            Positioned(
+              top: 10,
+              right: 0,
+              left: 0,
+              child:  Container(
+                  color: Colors.black,
+                  height: MediaQuery.of(context).size.height,
+                  width:MediaQuery.of(context).size.width,
+                  child:InAppWebView(
                     key: webViewKey,
                     initialUrlRequest: URLRequest(
-                    url: Uri.parse("http://eyes.live.net.mk/mmcontent/${provide.items[provide.index].fileName!}"),
+                      url: Uri.parse("http://eyes.live.net.mk/mmcontent/${provide.items[provide.index].fileName!}"),
                     ),
-                    )),
-        ),
-      if(_loadingVideo)
-        Positioned(
-          top: 10,
-          right: 0,
-          left: 0,
-          child:  Container(
-            color: Colors.white,
-            height: MediaQuery.of(context).size.height,
-            width:MediaQuery.of(context).size.width,
-            child:const Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
+                    onLoadError: (controller, url, code, message) {
+                      print("WebView error: $code, $message");
+                      // Handle the error here, such as displaying a message to the user.
+                    },
+                  )),
+            ),
+          if(_loadingVideo)
+            Positioned(
+              top: 10,
+              right: 0,
+              left: 0,
+              child:  Container(
+                  color: Colors.white,
+                  height: MediaQuery.of(context).size.height,
+                  width:MediaQuery.of(context).size.width,
+                  child:const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
 
-                CircularProgressIndicator(),
-                SizedBox(height: 10,),
-                Text(" Video Processing"),
-              ],
-            ) ),
-        ),
-      ],
-    ),
-  );
-     
-}
+                      CircularProgressIndicator(),
+                      SizedBox(height: 10,),
+                      Text(" Video Processing"),
+                    ],
+                  ) ),
+            ),
+        ],
+      ),
+    );
+
+  }
 
   Widget _backButton() => Positioned(
-        top: 40,
-        left: 8,
-        child: SizedBox(
-          height: 50.0,
-          width: 50.0,
-          child: FloatingActionButton(
-            heroTag: Object(),
-            onPressed: () => Navigator.of(context).pop(),
-            backgroundColor: Colors.black54,
-            child:const Icon(
-              Icons.arrow_back_ios_outlined,
-              size: 20,
-            ),
-          ),
+    top: 40,
+    left: 8,
+    child: SizedBox(
+      height: 50.0,
+      width: 50.0,
+      child: FloatingActionButton(
+        heroTag: Object(),
+        onPressed: () => Navigator.of(context).pop(),
+        backgroundColor: Colors.black54,
+        child:const Icon(
+          Icons.arrow_back_ios_outlined,
+          size: 20,
         ),
-      );
+      ),
+    ),
+  );
 
 
 
 
   Widget _switchLiveCameraToggle() => Positioned(
-        bottom: 8,
-        right: 8,
-        child: SizedBox(
-          height: 50.0,
-          width: 50.0,
-          child: FloatingActionButton(
-            heroTag: Object(),
-            onPressed: _switchLiveCamera,
-            backgroundColor: Colors.black54,
-            child: Icon(
-              Platform.isIOS
-                  ? Icons.flip_camera_ios_outlined
-                  : Icons.flip_camera_android_outlined,
-              size: 25,
-            ),
-          ),
+    bottom: 8,
+    right: 8,
+    child: SizedBox(
+      height: 50.0,
+      width: 50.0,
+      child: FloatingActionButton(
+        heroTag: Object(),
+        onPressed: _switchLiveCamera,
+        backgroundColor: Colors.black54,
+        child: Icon(
+          Platform.isIOS
+              ? Icons.flip_camera_ios_outlined
+              : Icons.flip_camera_android_outlined,
+          size: 25,
         ),
-      );
+      ),
+    ),
+  );
 
 
 
@@ -341,16 +350,16 @@ void _initialize() async {
       _controller?.getMaxZoomLevel().then((value) {
         _maxAvailableZoom = value;
       });
-      
+
       _currentExposureOffset = 0.0;
       _controller?.getMinExposureOffset().then((value) {
         _minAvailableExposureOffset = value;
       });
-      
+
       _controller?.getMaxExposureOffset().then((value) {
         _maxAvailableExposureOffset = value;
       });
-      
+
       _controller?.startImageStream(_processCameraImage).then((value) {
         if (widget.onCameraFeedReady != null) {
           widget.onCameraFeedReady!();
@@ -359,16 +368,19 @@ void _initialize() async {
           widget.onCameraLensDirectionChanged!(camera.lensDirection);
         }
       });
-   
-   
-   
+
+
+
       setState(() {});
     });
   }
 
   Future _stopLiveFeed() async {
-    await _controller?.stopImageStream();
-    await _controller?.dispose();
+    if (_controller != null && _controller!.value.isStreamingImages) {
+      await _controller!.stopImageStream();
+
+    }
+    await _controller!.dispose();
     _controller = null;
   }
 
@@ -386,51 +398,51 @@ void _initialize() async {
     if (inputImage == null) return;
     widget.onImage(inputImage);
   }
-  
 
-final _orientations = {
+
+  final _orientations = {
     DeviceOrientation.portraitUp: 0,
     DeviceOrientation.landscapeLeft: 90,
     DeviceOrientation.portraitDown: 180,
     DeviceOrientation.landscapeRight: 270,
   };
 
-InputImage? _inputImageFromCameraImage(CameraImage image) {
+  InputImage? _inputImageFromCameraImage(CameraImage image) {
     if (_controller == null) return null;
 
     final camera = _cameras[_cameraIndex];
     final sensorOrientation = camera.sensorOrientation;
     InputImageRotation? rotation;
-      if (Platform.isIOS) {
-        rotation = InputImageRotationValue.fromRawValue(sensorOrientation);
-      } else if (Platform.isAndroid) {
-        var rotationCompensation =
-            _orientations[_controller!.value.deviceOrientation];
-        if (rotationCompensation == null) return null;
-        if (camera.lensDirection == CameraLensDirection.front) {
-          // front-facing
-          rotationCompensation = (sensorOrientation + rotationCompensation) % 360;
-        } else {
-          // back-facing
-          rotationCompensation =
-              (sensorOrientation - rotationCompensation + 360) % 360;
-        }
-        rotation = InputImageRotationValue.fromRawValue(rotationCompensation);
-        // print('rotationCompensation: $rotationCompensation');
+    if (Platform.isIOS) {
+      rotation = InputImageRotationValue.fromRawValue(sensorOrientation);
+    } else if (Platform.isAndroid) {
+      var rotationCompensation =
+      _orientations[_controller!.value.deviceOrientation];
+      if (rotationCompensation == null) return null;
+      if (camera.lensDirection == CameraLensDirection.front) {
+        // front-facing
+        rotationCompensation = (sensorOrientation + rotationCompensation) % 360;
+      } else {
+        // back-facing
+        rotationCompensation =
+            (sensorOrientation - rotationCompensation + 360) % 360;
       }
+      rotation = InputImageRotationValue.fromRawValue(rotationCompensation);
+      // print('rotationCompensation: $rotationCompensation');
+    }
     if (rotation == null) return null;
-   
+
     final format = InputImageFormatValue.fromRawValue(image.format.raw);
-    
-      if (format == null ||
-          (Platform.isAndroid && format != InputImageFormat.nv21) ||
-          (Platform.isIOS && format != InputImageFormat.bgra8888)) return null;
 
-      // since format is constraint to nv21 or bgra8888, both only have one plane
-      if (image.planes.length != 1) return null;
-      final plane = image.planes.first;
+    if (format == null ||
+        (Platform.isAndroid && format != InputImageFormat.nv21) ||
+        (Platform.isIOS && format != InputImageFormat.bgra8888)) return null;
 
-  return InputImage.fromBytes(
+    // since format is constraint to nv21 or bgra8888, both only have one plane
+    if (image.planes.length != 1) return null;
+    final plane = image.planes.first;
+
+    return InputImage.fromBytes(
       bytes: plane.bytes,
       metadata: InputImageMetadata(
         size: Size(image.width.toDouble(), image.height.toDouble()),
@@ -441,77 +453,76 @@ InputImage? _inputImageFromCameraImage(CameraImage image) {
     );
   }
 
-bool recordingInProgress = false;
+  bool recordingInProgress = false;
 
-Future<void> _recordVideo() async {
-  if (!recordingInProgress) {
-    try {
-      recordingInProgress = true;
+  Future<void> _recordVideo(RecordingProvider provider) async {
+    if (!recordingInProgress) {
+      try {
+        recordingInProgress = true;
 
-      if (startVideo) {
-         Provider.of<RecordingProvider>(context, listen: false).startRecording = false;
-        Provider.of<RecordingProvider>(context, listen: false).eyesinbox = false;
-         
-
-        final file = await _controller!.stopVideoRecording(); 
-            setState(() {
-             startVideo = false;
+        if (startVideo) {
+          provider.startRecording = false;
+          provider.eyesinbox = false;
 
 
+          final file = await _controller!.stopVideoRecording();
+          setState(() {
+            startVideo = false;
 
 
-            });
-        print("stop reacording");
-        String  timestamp = DateTime.now().millisecondsSinceEpoch.toString();   
-       
-        final croppedFilePath = await getTemporaryDirectory().then((dir) {
-          return '${dir.path}/$timestamp.mp4';
-        });
 
-      const croppingHeight = 150; 
-        await _flutterFFmpeg
-            .execute("-y -i ${file.path} -filter:v crop=in_w:$croppingHeight:0:280 -c:a copy $croppedFilePath")
-            .then((rc) => print("FFmpeg process exited with rc $rc"));
-         
-        setState(() {
-          _loadingVideo = false;
-        });
-        print(croppedFilePath);
-       pushAndRemove(context: context, screen: VideoPage(filePath: croppedFilePath,user: widget.user!,), );
-      } else {
-        if (!_controller!.value.isRecordingVideo) {
-          await _controller!.prepareForVideoRecording();
-          await _controller!.startVideoRecording();
 
-            setState(() {
+          });
+          print("stop reacording");
+          String  timestamp = DateTime.now().millisecondsSinceEpoch.toString();
 
-            _isRecording = true;
+          final croppedFilePath = await getTemporaryDirectory().then((dir) {
+            return '${dir.path}/$timestamp.mp4';
           });
 
-          ToastHelper.showToast(msg:"Recording in progress. Adjuste your focus, please." , backgroundColor: Colors.green);
-          fetchDatashow();
+          const croppingHeight = 150;
+          await _flutterFFmpeg
+              .execute("-y -i ${file.path} -filter:v crop=in_w:$croppingHeight:0:280 -r 60 -c:a copy $croppedFilePath")
+              .then((rc) => print("FFmpeg process exited with rc $rc"));
+
+          setState(() {
+            _loadingVideo = false;
+          });
+          print(croppedFilePath);
+          pushAndRemove(context: context, screen: VideoPage(filePath: croppedFilePath,user: widget.user!,), );
+        } else {
+          if (!_controller!.value.isRecordingVideo) {
+            await _controller!.prepareForVideoRecording();
+            await _controller!.startVideoRecording();
+
+            setState(() {
+
+              _isRecording = true;
+            });
+
+            ToastHelper.showToast(msg:"Recording in progress. Adjuste your focus, please." , backgroundColor: Colors.green);
+            fetchDatashow();
 
 
 
+          }
         }
+      } finally {
+        recordingInProgress = false;
       }
-    } finally {
-      recordingInProgress = false;
     }
   }
-}
 
-_showMessages() {
-  setState(() {
-          messag1 = true;
-          messag2 = true;
-        });
+  _showMessages() {
+    setState(() {
+      messag1 = true;
+      messag2 = true;
+    });
 
-  Provider.of<RecordingProvider>(context,listen: false).eyesinbox=true;
+    Provider.of<RecordingProvider>(context,listen: false).eyesinbox=true;
   }
 
 }
-
 
 
 

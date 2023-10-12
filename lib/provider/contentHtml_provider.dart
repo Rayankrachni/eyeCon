@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:eyedetector/model/model.dart';
+import 'package:eyedetector/provider/dio.dart';
 import 'package:flutter/material.dart';
 
 class ContentHtmlProvider extends ChangeNotifier {
   List<Model> items = [];
+  ApiProvider _apiProvider =ApiProvider();
   int _index = 0; // The private variable for index
 
   // Getter for index
@@ -18,11 +20,10 @@ class ContentHtmlProvider extends ChangeNotifier {
   static const String apiUrl = 'http://eyes.live.net.mk/api/MobileUser/prescription/0';
 
   Future<void> fetchData() async {
-    final dio = Dio();
+
 
     try {
-      final response = await dio.get(apiUrl);
-
+      Response response = await _apiProvider.getData();
       if (response.statusCode == 200) {
         final data = response.data; // The response is already a Map
 

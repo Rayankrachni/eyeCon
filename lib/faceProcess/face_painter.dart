@@ -29,7 +29,8 @@ class FaceDetectorPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-  
+
+    final recordingProvider = Provider.of<RecordingProvider>(context, listen: false);
 
     final Paint leftEyePaint = Paint()
       ..style = PaintingStyle.fill
@@ -104,7 +105,7 @@ class FaceDetectorPainter extends CustomPainter {
 
       void paintEye(FaceLandmark landmark, Paint paint) {
               if (landmark.position != null) {
-                  Provider.of<RecordingProvider>(context,listen: false).stopRecord==false; 
+                recordingProvider?.stopRecord==false;
                   final double eyeRadius = 6.0;
                     final Offset eyeCenter = Offset(
                       translateX(
@@ -128,15 +129,18 @@ class FaceDetectorPainter extends CustomPainter {
                   }
                   Timer(const Duration(seconds: durationToTest), () {
                 //  
-                  if(Provider.of<RecordingProvider>(context,listen: false).stopRecord==false) {
+                  if(recordingProvider?.stopRecord==false) {
 
                     Timer( const Duration(seconds: durationToValid), () {
-                      Provider.of<RecordingProvider>(context,listen: false).startRecording=true;         
+
+
+
+                      recordingProvider?.startRecording=true;
                     });
                     
                   }
                   else{
-                    Provider.of<RecordingProvider>(context,listen: false).startRecording=false;
+                    recordingProvider?.startRecording=false;
                   }
                   
               });

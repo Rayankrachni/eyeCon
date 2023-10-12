@@ -1,10 +1,26 @@
 
+
+
+
 import 'package:dio/dio.dart';
-import 'package:eyedetector/model/user.dart';
+import 'package:eyedetector/helpers/sharedPre.dart';
+import 'package:eyedetector/helpers/toast.dart';
+import 'package:eyedetector/homePage.dart';
+import 'package:http_parser/http_parser.dart';
+
+import 'package:eyedetector/provider/dio.dart';
 import 'package:flutter/material.dart';
 
+import '../const/appConsts.dart';
+import '../helpers/navigator.dart';
 
-class RecordingProvider extends ChangeNotifier {
+
+class RecordingProvider extends ChangeNotifier { 
+
+
+  
+  ApiProvider _apiProvider =ApiProvider();
+
   bool _startRecording=false;
 
   set startRecording(bool value) {
@@ -41,34 +57,48 @@ class RecordingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> sendData(UserModel user, String path) async {
-  _setLoading(true);
-  try {
-    // Create a FormData object
-    // ignore: unused_local_variable
-    FormData formData = FormData.fromMap({
-      "title": user.name,
-      "surname": user.surname,
-      "email": user.email,
-      "birthday": user.birthday,
-      "gender": user.gender,
-      "phone": user.phone,
-      'video': await MultipartFile.fromFile(path, filename: 'video.mp4'),
-  
-     
-    });
+  Future<void> sendData(String videopath, BuildContext context) async {
+    try {
+      String? mtoken = await SharedPreferencesHelper.getString(token);
+      if (mtoken == null) {
+        print("Token is null");
+        return;
+      }
 
-    /*Response response = await sendData(formData);
+      // Create a FormData object
+      FormData formData = FormData.fromMap({
+        "File": await MultipartFile.fromFile(videopath, contentType: MediaType("video", "mp4"),),
+        "Coords": "empty",
+        // Replace this with the appropriate coordinates.
+      });
 
-    if (response.statusCode == 200) {
-    } else {
-    }*/
-  } catch (e) {
-    // Handle error here
-    if (e is DioError) {
+      // Ensure your _apiProvider.uploadVideoFile is setting the correct headers, etc.
+      Response response = await _apiProvider.uploadVideoFile(mtoken, formData);
+      if (response.statusCode == 200) {
+        // Handle the post data here if needed
+        print(response.data);
+        ToastHelper.showToast(msg: "Upload Success", backgroundColor: Colors.green);
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => HomePage()),
+              (route) => false,
+        );
+      } else {
+        print("Error with status code: ${response.statusCode}");
+        ToastHelper.showToast(msg: "Upload Failed", backgroundColor: Colors.red);
+        print(response.data);
+      }
+    } catch (e) {
+      // Handle the error here
+      print("Error: $e");
+      if (e is DioError) {
+        ToastHelper.showToast(msg: "Upload Failed", backgroundColor: Colors.red);
+        print("DioError: ${e.message}");
+        if (e.response != null) {
+          print("Error Response Status Code: ${e.response?.statusCode}");
+
+        }
+        print("Error Type: ${e.type}");
+      }
     }
   }
-  _setLoading(false);
- }
-  
 }

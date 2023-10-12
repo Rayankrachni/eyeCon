@@ -182,7 +182,7 @@ class _FaceDetectorViewState extends State<FaceDetectorView> with WidgetsBinding
     _isBusy = false;
     if (mounted) {
 
-      setState(() {});
+     
     }
   }
 

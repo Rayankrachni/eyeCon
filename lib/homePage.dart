@@ -6,6 +6,7 @@ import 'package:eyedetector/faceDetection.dart';
 import 'package:eyedetector/helpers/navigator.dart';
 import 'package:eyedetector/helpers/sharedPre.dart';
 import 'package:eyedetector/model/user.dart';
+import 'package:eyedetector/provider/contentHtml_provider.dart';
 import 'package:eyedetector/provider/userProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -21,7 +22,29 @@ class _HomePageState extends State<HomePage> {
 
 
   @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
 
+      await fetchData();
+      String? my_token = await SharedPreferencesHelper.getString(token);
+
+      if (my_token == null || my_token.isEmpty) {
+        print("no token");
+      } else {
+        print("my_token $my_token");
+
+      }
+    });}
+  final ContentHtmlProvider provide = ContentHtmlProvider();
+  Future<void> fetchData() async {
+    try {
+      await provide.fetchData();
+
+    } catch (error) {
+      // Handle any potential errors here
+      print("Error fetching data: $error");
+    }
+  }
 
 
   var userModel = UserModel(
@@ -59,8 +82,7 @@ class _HomePageState extends State<HomePage> {
               width: MediaQuery.of(context).size.width*0.9,
               child: ElevatedButton(
                   onPressed: (){
-                      push(context: context, screen: FaceDetectorView(userModel: userModel,));
-
+                      pushAndRemove(context: context, screen: FaceDetectorView(userModel: userModel,));
                   },
 
                   style: ElevatedButton.styleFrom(

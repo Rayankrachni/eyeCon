@@ -70,6 +70,6 @@ class _DetectorViewState extends State<DetectorView> {
     if (widget.onDetectorViewModeChanged != null) {
       widget.onDetectorViewModeChanged!(_mode);
     }
-    setState(() {});
+
   }
 }
