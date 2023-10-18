@@ -329,10 +329,12 @@ class _CameraViewState extends State<CameraView> {
 
   Future _startLiveFeed() async {
     final camera = _cameras[_cameraIndex];
+
     _controller = CameraController(
       camera,
       // Set to ResolutionPreset.high. Do NOT set it to ResolutionPreset.max because for some phones does NOT work.
       ResolutionPreset.high,
+
       enableAudio: false,
       imageFormatGroup: Platform.isAndroid
           ? ImageFormatGroup.nv21
@@ -468,10 +470,6 @@ class _CameraViewState extends State<CameraView> {
           final file = await _controller!.stopVideoRecording();
           setState(() {
             startVideo = false;
-
-
-
-
           });
           print("stop reacording");
           String  timestamp = DateTime.now().millisecondsSinceEpoch.toString();
@@ -482,7 +480,7 @@ class _CameraViewState extends State<CameraView> {
 
           const croppingHeight = 150;
           await _flutterFFmpeg
-              .execute("-y -i ${file.path} -filter:v crop=in_w:$croppingHeight:0:280 -r 60 -c:a copy $croppedFilePath")
+              .execute("-y -i ${file.path} -filter:v crop=in_w:$croppingHeight:0:280 -r 15 -c:a copy $croppedFilePath")
               .then((rc) => print("FFmpeg process exited with rc $rc"));
 
           setState(() {
@@ -502,9 +500,6 @@ class _CameraViewState extends State<CameraView> {
 
             ToastHelper.showToast(msg:"Recording in progress. Adjuste your focus, please." , backgroundColor: Colors.green);
             fetchDatashow();
-
-
-
           }
         }
       } finally {

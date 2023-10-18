@@ -1,8 +1,10 @@
 
 
 import 'package:eyedetector/const/appColor.dart';
+import 'package:eyedetector/helpers/navigator.dart';
 import 'package:eyedetector/model/user.dart';
 import 'package:eyedetector/provider/userProvider.dart';
+import 'package:eyedetector/webViewPage.dart';
 import 'package:eyedetector/widget/textField.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -144,63 +146,7 @@ class _FormPagetState extends State<FormPage> {
 
                       )),
 
-                 /* const SizedBox(height: 20,),
-                  Container(
-                      width: MediaQuery.of(context).size.width*0.95,
-                             decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10.0),
-                             color: Colors.white,
-                                border: Border.all(
-                                  color: textfieldbg
-                                )
-                              ),
-                            child: Center(
-                              child: Row(
-                                children: [
-                                  const SizedBox(width: 10,),
-                                  Icon(Icons.trending_up,color: primaryColor,size: 20,),
-                                  SizedBox(
-                                    width: MediaQuery.of(context).size.width*0.7,
-                                    child:  DropdownButton<String>(
-                                      value: selectedItem,
 
-
-                                      onChanged: (newValue) {
-                                        setState(() {
-                                          selectedItem = newValue!;
-                                        });
-                                      },
-                                      hint: const Text("Gender"),
-                                      icon: Icon(Icons.abc, color: Colors.transparent), // Remove the icon
-                                      underline: Container(),
-                                      padding: const EdgeInsets.only(left: 0, right: 20, top: 0),
-                                      alignment: Alignment.center,
-                                      // Set a value greater than or equal to kMinInteractiveDimension
-                                      itemHeight: kMinInteractiveDimension,
-                                      menuMaxHeight: 200,
-                                      items: genderList.map((String value) {
-                                        return DropdownMenuItem<String>(
-                                          value: value,
-                                          child: SizedBox(
-                                            child: Padding(
-                                              padding: const EdgeInsets.symmetric(vertical: 8.0,),
-                                              child: Center(
-                                                child: Text(
-                                                  value,
-                                                  style: TextStyle(color: Colors.black, fontSize: 12),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      }).toList(),
-                                    ),
-
-                                  ),
-                                ],
-                              ),
-
-                            )),*/
                   const Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: Text("Birth Date"),
@@ -290,7 +236,8 @@ class _FormPagetState extends State<FormPage> {
                         )),
 
                      child: provider.isLoading?Center(child: CircularProgressIndicator()):Text("Login",style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),)),
-                  )
+                  ),
+
                 ],
               ),
             ),

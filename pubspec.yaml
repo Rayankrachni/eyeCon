@@ -34,6 +34,7 @@ dependencies:
   flutter_inappwebview: ^5.8.0
   flutter_launcher_icons: ^0.13.1
   http_parser: ^4.0.2
+  webview_flutter: ^4.4.1
 
 flutter_icons:
   android: true
@@ -58,7 +59,8 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/eyecon.png
-    - assets/eyecon1.jpg
+    - assets/eyecon1.png
+    - assets/FITD-ENG-White.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
