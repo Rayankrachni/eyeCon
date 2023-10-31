@@ -1,13 +1,17 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:eyedetector/const/appConsts.dart';
 import 'package:eyedetector/faceProcess/cordinator.dart';
+import 'package:eyedetector/provider/userProvider.dart';
 import 'package:eyedetector/provider/video_recording.dart';
 import 'dart:math' as math; 
 import 'package:flutter/material.dart';
+import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:provider/provider.dart';
+import 'package:video_player/video_player.dart';
 
 
 class FaceDetectorPainter extends CustomPainter {
@@ -31,6 +35,8 @@ class FaceDetectorPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
 
     final recordingProvider = Provider.of<RecordingProvider>(context, listen: false);
+    final provider = Provider.of<UserProvider>(context, listen: false);
+
 
     final Paint leftEyePaint = Paint()
       ..style = PaintingStyle.fill
@@ -86,6 +92,8 @@ class FaceDetectorPainter extends CustomPainter {
             rightEyeTop = math.min(rightEyeTop, eyePosition.dy);
             rightEyeRight = math.max(rightEyeRight, eyePosition.dx);
             rightEyeBottom = math.max(rightEyeBottom, eyePosition.dy);
+
+
           }
         }
       }
@@ -129,24 +137,33 @@ class FaceDetectorPainter extends CustomPainter {
                   }
                   Timer(const Duration(seconds: durationToTest), () {
                 //  
-                  if(recordingProvider?.stopRecord==false) {
+                  if(recordingProvider.stopRecord==false) {
 
                     Timer( const Duration(seconds: durationToValid), () {
 
 
 
-                      recordingProvider?.startRecording=true;
+                      recordingProvider.startRecording=true;
+
+
+
+
+
                     });
-                    
+
                   }
                   else{
-                    recordingProvider?.startRecording=false;
+                    recordingProvider.startRecording=false;
                   }
-                  
+
               });
             }
 
-            for (final type in face.landmarks.keys) 
+
+
+
+
+      for (final type in face.landmarks.keys)
             {
               if (type == FaceLandmarkType.leftEye) {
                 final landmark = face.landmarks[type];
@@ -161,7 +178,7 @@ class FaceDetectorPainter extends CustomPainter {
               }
             }
           }
-        } 
+        }
         
         @override
         bool shouldRepaint(FaceDetectorPainter oldDelegate) {
@@ -169,4 +186,7 @@ class FaceDetectorPainter extends CustomPainter {
         }
 
 
+
+
  }
+

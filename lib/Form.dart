@@ -214,10 +214,7 @@ class _FormPagetState extends State<FormPage> {
                         eyeColor: selectedColor
                       );
 
-                              provider.register(userModel!, context) ;
-                    //
-
-
+                      provider.register(userModel!, context) ;
 
 
                       }    else {

@@ -47,15 +47,6 @@ class _HomePageState extends State<HomePage> {
   }
 
 
-  var userModel = UserModel(
-      name: "name.text",
-      email: "email.text",
-      surname: "surname.text",
-      phone: "phone.text",
-      gender: "selectedItem",
-      birthday: "birthday.text",
-      eyeColor: "selectedColor"
-  );
   @override
   Widget build(BuildContext context) {
     final UserProvider provider = Provider.of<UserProvider>(context);
@@ -82,7 +73,7 @@ class _HomePageState extends State<HomePage> {
               width: MediaQuery.of(context).size.width*0.9,
               child: ElevatedButton(
                   onPressed: (){
-                      pushAndRemove(context: context, screen: FaceDetectorView(userModel: userModel,));
+                      pushAndRemove(context: context, screen: FaceDetectorView());
                   },
 
                   style: ElevatedButton.styleFrom(

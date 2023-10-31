@@ -51,12 +51,12 @@ class _ShowWebViewState extends State<ShowWebView> {
                     child: ElevatedButton(
                       onPressed: () async {
                         String? userToken = await SharedPreferencesHelper.getString(token);
-
-                        if (userToken == null || userToken.isEmpty) {
+                        push(context: context, screen: HomePage());
+                        /*if (userToken == null || userToken.isEmpty) {
                           push(context: context, screen:  FormPage());
                         } else {
                           push(context: context, screen: HomePage());
-                        }
+                        }*/
                       },
                       style: ElevatedButton.styleFrom(
                         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),

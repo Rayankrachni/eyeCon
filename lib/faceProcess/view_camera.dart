@@ -26,7 +26,6 @@ class CameraView extends StatefulWidget {
       {Key? key,
         required this.customPaint,
         required this.onImage,
-        required this.user,
         this.onCameraFeedReady,
         this.onDetectorViewModeChanged,
         this.onCameraLensDirectionChanged,
@@ -34,7 +33,6 @@ class CameraView extends StatefulWidget {
       : super(key: key);
 
   final CustomPaint? customPaint;
-  final UserModel? user;
   final Function(InputImage inputImage) onImage;
   final VoidCallback? onCameraFeedReady;
   final VoidCallback? onDetectorViewModeChanged;
@@ -47,6 +45,8 @@ class CameraView extends StatefulWidget {
 
 class _CameraViewState extends State<CameraView> {
   static List<CameraDescription> _cameras = [];
+  static const MethodChannel methodChannel = MethodChannel('com.yourapp/camera_fps');
+
   final FlutterFFmpeg _flutterFFmpeg = FlutterFFmpeg();
   CameraController? _controller;
   int _cameraIndex = -1;
@@ -111,6 +111,7 @@ class _CameraViewState extends State<CameraView> {
 
     if (_cameraIndex != -1) {
       _startLiveFeed();
+      methodChannel.invokeMethod('setCameraFps', {'fps': 15});
     }
   }
 
@@ -183,6 +184,7 @@ class _CameraViewState extends State<CameraView> {
     if (_cameras.isEmpty) return Container();
     if (_controller == null) return Container();
     if (_controller?.value.isInitialized == false) return Container();
+
     if(!messag1)
       // ignore: curly_braces_in_flow_control_structures
       ToastHelper.showToast(msg: "Fix Your Phone Please",   backgroundColor: Colors.black);
@@ -340,7 +342,9 @@ class _CameraViewState extends State<CameraView> {
           ? ImageFormatGroup.nv21
           : ImageFormatGroup.bgra8888,
     );
+
     _controller?.initialize().then((_) {
+
       if (!mounted) {
         return;
       }
@@ -375,6 +379,7 @@ class _CameraViewState extends State<CameraView> {
 
       setState(() {});
     });
+
   }
 
   Future _stopLiveFeed() async {
@@ -392,6 +397,10 @@ class _CameraViewState extends State<CameraView> {
 
     await _stopLiveFeed();
     await _startLiveFeed();
+
+
+
+
     setState(() => _changingCameraLens = false);
   }
 
@@ -487,7 +496,7 @@ class _CameraViewState extends State<CameraView> {
             _loadingVideo = false;
           });
           print(croppedFilePath);
-          pushAndRemove(context: context, screen: VideoPage(filePath: croppedFilePath,user: widget.user!,), );
+          pushAndRemove(context: context, screen: VideoPage(filePath: croppedFilePath,), );
         } else {
           if (!_controller!.value.isRecordingVideo) {
             await _controller!.prepareForVideoRecording();
@@ -518,7 +527,6 @@ class _CameraViewState extends State<CameraView> {
   }
 
 }
-
 
 
 

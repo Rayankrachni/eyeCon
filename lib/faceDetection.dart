@@ -3,26 +3,26 @@ import 'package:camera/camera.dart';
 import 'package:eyedetector/faceProcess/face_painter.dart';
 import 'package:eyedetector/helpers/toast.dart';
 import 'package:eyedetector/model/user.dart';
+import 'package:eyedetector/provider/userProvider.dart';
 import 'package:eyedetector/provider/video_recording.dart';
 import 'package:eyedetector/faceProcess/view_detector.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
-import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:provider/provider.dart';
 
+import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 
 
 
 
 class FaceDetectorView extends StatefulWidget {
+  const FaceDetectorView({Key? key}) : super(key: key);
 
-  UserModel? userModel;
-    FaceDetectorView({
-    required this.userModel, });
   @override
-  State<FaceDetectorView> createState() => _FaceDetectorViewState();
+  _FaceDetectorViewState createState() => _FaceDetectorViewState();
 }
+
 
 class _FaceDetectorViewState extends State<FaceDetectorView> with WidgetsBindingObserver {
   final FaceDetector _faceDetector = FaceDetector(
@@ -55,6 +55,8 @@ class _FaceDetectorViewState extends State<FaceDetectorView> with WidgetsBinding
   @override
   void dispose() {
     _canProcess = false;
+
+
     _faceDetector.close();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -84,7 +86,6 @@ class _FaceDetectorViewState extends State<FaceDetectorView> with WidgetsBinding
       title: 'Face Detector',
       customPaint: _customPaint,
       text: _text,
-      user:widget.userModel!,
       onImage: _processImage,
       initialCameraLensDirection: _cameraLensDirection,
       onCameraLensDirectionChanged: (value) => _cameraLensDirection = value,
@@ -132,11 +133,53 @@ class _FaceDetectorViewState extends State<FaceDetectorView> with WidgetsBinding
 
       if(forground) ToastHelper.showToast(msg: "Fix Your Position", backgroundColor: Colors.green);
       facesInTargetArea.add(face);
-     
+
+      if( Provider.of<RecordingProvider>(context,listen: false).startRecording==true){
+
+        print("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
+        // Access landmarks for the left and right eyes
+        final leftEyeLandmark = face.landmarks[FaceLandmarkType.leftEye];
+        final rightEyeLandmark = face.landmarks[FaceLandmarkType.rightEye];
+
+
+
+        if (leftEyeLandmark != null && rightEyeLandmark != null) {
+          final leftEyeX = leftEyeLandmark.position.x;
+          final leftEyeY = leftEyeLandmark.position.y;
+          final rightEyeX = rightEyeLandmark.position.x;
+          final rightEyeY = rightEyeLandmark.position.y;
+
+          // Now you have the coordinates of the left and right eyes
+          print("Left Eye X: $leftEyeX, Left Eye Y: $leftEyeY");
+          print("Right Eye X: $rightEyeX, Right Eye Y: $rightEyeY");
+
+
+
+          Provider.of<UserProvider>(context, listen: false).addLandmark({
+            'left': "leftEye",
+            'XLeftEye': leftEyeX,
+            'YLeftEye': leftEyeY,
+            'right': "righttEye",
+            'XRightEye': rightEyeX,
+            'YRightEye': rightEyeY,
+          });
+          final list= Provider.of<UserProvider>(context, listen: false).allLandmarks;
+          print("Landmarks added in ClassA: ${list}");
+
+
+
+
+        }
+      }
+
+
+
        
 
         }
     else{
+
+      print("1111111111111111111111");
       
       facesInTargetArea=[];   
       // ignore: use_build_context_synchronously
