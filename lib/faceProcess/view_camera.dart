@@ -5,7 +5,6 @@ import 'package:camera/camera.dart';
 import 'package:eyedetector/const/appConsts.dart';
 import 'package:eyedetector/helpers/navigator.dart';
 import 'package:eyedetector/helpers/toast.dart';
-import 'package:eyedetector/model/user.dart';
 import 'package:eyedetector/provider/contentHtml_provider.dart';
 import 'package:eyedetector/provider/video_recording.dart';
 import 'package:eyedetector/faceProcess/videoPage.dart';
@@ -45,7 +44,6 @@ class CameraView extends StatefulWidget {
 
 class _CameraViewState extends State<CameraView> {
   static List<CameraDescription> _cameras = [];
-  static const MethodChannel methodChannel = MethodChannel('com.yourapp/camera_fps');
 
   final FlutterFFmpeg _flutterFFmpeg = FlutterFFmpeg();
   CameraController? _controller;
@@ -74,6 +72,27 @@ class _CameraViewState extends State<CameraView> {
   bool loader = true;
   Key webViewKey = GlobalKey();
 
+  int secondsPassed = 0;
+  Timer? timer;
+
+  void startTimer() {
+    timer = Timer.periodic(Duration(seconds: 1), (Timer t) {
+      setState(() {
+        secondsPassed++;
+      });
+    });
+  }
+  void stopTimer() {
+    timer?.cancel();
+  }
+  String formatDuration(int seconds) {
+    final int minutes = seconds ~/ 60;
+    final int remainingSeconds = seconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
+  }
+
+
+
 
   Future<void> fetchData() async {
     try {
@@ -94,6 +113,7 @@ class _CameraViewState extends State<CameraView> {
     fetchData();
     _initialize();
     _showMessages();
+    videoDuration();
 
   }
 
@@ -111,7 +131,7 @@ class _CameraViewState extends State<CameraView> {
 
     if (_cameraIndex != -1) {
       _startLiveFeed();
-      methodChannel.invokeMethod('setCameraFps', {'fps': 15});
+      //methodChannel.invokeMethod('setCameraFps', {'fps': 15});
     }
   }
 
@@ -129,12 +149,23 @@ class _CameraViewState extends State<CameraView> {
   }
 
   int totalDuration=0;
+
+  void videoDuration(){
+    for (int i = 0; i < provide.items.length; i++) {
+
+      setState(() {
+        totalDuration += provide.items[i].duration!;
+      });
+
+
+
+    }
+  }
 // Initialize the index variable
 
   void fetchDatashow() async {
-
+    startTimer();
     for (int i = 0; i < provide.items.length; i++) {
-      totalDuration += provide.items[i].duration!;
 
 
       if(i==0){
@@ -157,7 +188,7 @@ class _CameraViewState extends State<CameraView> {
 
 
     }
-
+    stopTimer();
     setState(() {
       startVideo = true;
       _loadingVideo = true;
@@ -245,20 +276,42 @@ class _CameraViewState extends State<CameraView> {
               top: 10,
               right: 0,
               left: 0,
-              child:  Container(
-                  color: Colors.black,
-                  height: MediaQuery.of(context).size.height,
-                  width:MediaQuery.of(context).size.width,
-                  child:InAppWebView(
-                    key: webViewKey,
-                    initialUrlRequest: URLRequest(
-                      url: Uri.parse("http://eyes.live.net.mk/mmcontent/${provide.items[provide.index].fileName!}"),
+              child: Stack(
+                children: [
+                  Container(
+                    color: Colors.black,
+                    height: MediaQuery.of(context).size.height,
+                    width: MediaQuery.of(context).size.width,
+                    child: InAppWebView(
+                      key: webViewKey,
+                      initialUrlRequest: URLRequest(
+                        url: Uri.parse("http://eyes.live.net.mk/mmcontent/${provide.items[provide.index].fileName!}"),
+                      ),
+                      onLoadError: (controller, url, code, message) {
+                        print("WebView error: $code, $message");
+                        // Handle the error here, such as displaying a message to the user.
+                      },
                     ),
-                    onLoadError: (controller, url, code, message) {
-                      print("WebView error: $code, $message");
-                      // Handle the error here, such as displaying a message to the user.
-                    },
-                  )),
+                  ),
+                  Positioned(
+                    top: 10,  // Adjust this value as per your needs
+                    left: 0,
+                    right: 0,
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: Text(
+                        "Recording Time: ${formatDuration(secondsPassed)}/ ${provide.items[0].duration!*provide.items.length} second",
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            backgroundColor: Colors.black.withOpacity(0.7)
+                        ), // Style as per your needs
+                      ),
+                    ),
+                  ),
+
+                ],
+              ),
             ),
           if(_loadingVideo)
             Positioned(

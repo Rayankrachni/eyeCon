@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:eyedetector/const/appConsts.dart';
 import 'package:eyedetector/model/model.dart';
 import 'package:eyedetector/provider/dio.dart';
 import 'package:flutter/material.dart';
+
+import '../helpers/sharedPre.dart';
 
 class ContentHtmlProvider extends ChangeNotifier {
   List<Model> items = [];
@@ -23,7 +26,8 @@ class ContentHtmlProvider extends ChangeNotifier {
 
 
     try {
-      Response response = await _apiProvider.getData();
+      String? mtoken = await SharedPreferencesHelper.getString(token);
+      Response response = await _apiProvider.getData(mtoken!);
       if (response.statusCode == 200) {
         final data = response.data; // The response is already a Map
 

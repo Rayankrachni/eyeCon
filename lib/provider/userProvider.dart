@@ -94,64 +94,47 @@ class UserProvider extends ChangeNotifier{
      List<List<String>> rows = [];
 
      // Header row
-     rows.add(['Frame',  'XLeft Coordinate', 'YLeft Coordinate','XRight Coordinate', 'YRight Coordinate']);
-     int lR=0;
-     int lL=0;
-     int rL=0;
-     int rR=0;
-     for (int i = 0; i < 150; i++) {
+     rows.add(['Frame', 'XLeft Coordinate', 'YLeft Coordinate', 'XRight Coordinate', 'YRight Coordinate']);
 
+     int frameNumber = 0;
 
-       if (i < landmarks.length) {
+     for (int i = 0; i < landmarks.length; i++) {
+       Map<String, dynamic> landmark = landmarks[i];
 
-         Map<String, dynamic> landmark = landmarks[i];
-         lR=landmark['XLeftEye'];
-         lL=landmark['YLeftEye'];
-         rR=landmark['YLeftEye'];
-         rL=landmark['YLeftEye'];
-         rows.add([i.toString(),  landmark['XLeftEye'].toString(), landmark['YLeftEye'].toString(),landmark['XRightEye'].toString(), landmark['YRightEye'].toString()]);
-       } else {
-         rows.add([i.toString(), lL.toString(), lR.toString(),rL.toString(), rR.toString()]);
-
+       // Insert each landmark 15 times
+       for (int j = 0; j < 15; j++) {
+         rows.add([
+           frameNumber.toString(),
+           landmark['XLeftEye'].toString(),
+           landmark['YLeftEye'].toString(),
+           landmark['XRightEye'].toString(),
+           landmark['YRightEye'].toString()
+         ]);
+         frameNumber++;
        }
      }
 
-   return rows;
+     return rows;
    }
 
 
-   Future<File> generateCsv(List<Map<String, dynamic>> landmarks) async {
-     List<List<String>> rows = [];
 
-     // Header row
-     rows.add(['Frame',  'XLeft Coordinate', 'YLeft Coordinate','XRight Coordinate', 'YRight Coordinate']);
+   Future<String> generateCsvFile(List<List<String>> rows, String fileName) async {
 
-     for (int i = 0; i < 150; i++) {
-       if (i < landmarks.length) {
-         Map<String, dynamic> landmark = landmarks[i];
-         rows.add([i.toString(),  landmark['XLeftEye'].toString(), landmark['XLeftEye'].toString(),landmark['XRightEye'].toString(), landmark['YRightEye'].toString()]);
-       } else {
-         rows.add([i.toString(), 'No landmarks', '', '']);
-       }
+
+     // Get the Downloads directory
+     Directory? downloadsDirectory = (await getExternalStorageDirectories(type: StorageDirectory.downloads))?.first;
+
+     if (downloadsDirectory == null) {
+       throw Exception('Downloads directory not found');
      }
 
-     print("rows $rows");
+     final csvPath = '${downloadsDirectory.path}/$fileName.csv';
+     final csvRows = rows.map((row) => row.join(',')).join('\n');
+     final file = File(csvPath);
+     await file.writeAsString(csvRows);
 
-     String csv = const ListToCsvConverter().convert(rows);
-
-     // Saving the CSV string to a file
-     final directory = await getApplicationDocumentsDirectory();
-     final path = directory.path + "/landmarks.csv";
-     final File file = File(path);
-
-
-     // After writing to the file
-     await file.writeAsString(csv);
-
-     // Read and print the content
-     String fileContent = await file.readAsString();
-     print("fileContent $fileContent");
-     return file.writeAsString(csv);
+     return csvPath;  // This returns the path to the created CSV file
    }
 
 

@@ -7,10 +7,11 @@ import 'package:eyedetector/helpers/toast.dart';
 import 'package:eyedetector/provider/video_recording.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
+import 'package:open_file/open_file.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
@@ -38,6 +39,26 @@ class _VideoPageState extends State<VideoPage> {
     super.dispose();
   }
 
+  Future<bool> requestStoragePermission() async {
+    var status = await Permission.storage.status;
+    if (!status.isGranted) {
+      status = await Permission.storage.request();
+      return status.isGranted;
+    }
+    return true;
+  }
+
+  Future<String?> saveFileToDownloadsDirectory(String sourcePath, String fileName) async {
+    try {
+      final targetPath = sourcePath;
+      final sourceFile = File(sourcePath);
+      await sourceFile.copy(targetPath);
+      return targetPath;
+    } catch (e) {
+      print('Error saving file to downloads: $e');
+      return null;
+    }
+  }
   Future<void> _initVideoPlayer(BuildContext context) async {
     _videoPlayerController = VideoPlayerController.file(File(widget.filePath));
 
@@ -51,13 +72,63 @@ class _VideoPageState extends State<VideoPage> {
 
 
     final landmarksList = context.read<UserProvider>().allLandmarks;
-    print("landmarksList $landmarksList");
+    print("landmarksList ${landmarksList.length}");
     final newList =await context.read<UserProvider>().generateFile(landmarksList);
+    final csvPath =await context.read<UserProvider>().generateCsvFile(newList, 'landMarks');
+    print("CSV saved at: $csvPath");
     print("newList $newList");
     print("newList ${newList.length}");
   }
 
 
+
+  Future<String> moveToDownloads(String localFilePath, String newFileName) async {
+    bool permissionGranted = await requestStoragePermission();
+    if (!permissionGranted) {
+      throw Exception('Storage permission not granted');
+    }
+
+
+
+      // For Android versions below 10
+      final externalDir = await getExternalStorageDirectory();
+      final downloadsDirPath = '${externalDir?.path}/Download';
+      final downloadsDir = Directory(downloadsDirPath);
+
+      // Check if downloads directory exists, if not create it
+      if (!downloadsDir.existsSync()) {
+        downloadsDir.createSync();
+      }
+
+      final newFilePath = '$downloadsDirPath/$newFileName.csv';
+      final newFile = await File(localFilePath).copy(newFilePath);
+
+      return newFile.path;
+
+  }
+
+
+  Future<void> exportFile() async {
+    try {
+
+      final landmarksList = context.read<UserProvider>().allLandmarks;
+      print("landmarksList ${landmarksList.length}");
+      final newList =await context.read<UserProvider>().generateFile(landmarksList);
+      print("landmarksList ${newList.length}");
+      final localCsvPath =await context.read<UserProvider>().generateCsvFile(newList, 'landMarks');
+      print("csvPath ${localCsvPath}");
+
+      // Move the file to the Downloads folder
+      final newFilePath = await moveToDownloads(localCsvPath, 'landMarks');
+      ToastHelper.showToast(msg: "File exported to: $newFilePath", backgroundColor: Colors.green);
+
+      // Optionally, show a success message to the user
+      // ...
+    } catch (e) {
+      // Handle exceptions or show an error message to the user
+      print(e.toString());
+    }
+  }
 
   Future<void> _exportVideoToGallery() async {
     try {
@@ -68,96 +139,8 @@ class _VideoPageState extends State<VideoPage> {
       ToastHelper.showToast(msg: "Can't save the video", backgroundColor: Colors.red);
     }
   }
-  List<Uint8List> extractedFrames = [];
 
 
-  Stream<Uint8List> getVideoFrameStream(String videoPath) async* {
-    final framesDirectory = await getTemporaryDirectory();
-    final extractedFramesDirectory = Directory('${framesDirectory.path}/extracted_frames');
-
-    if (!extractedFramesDirectory.existsSync()) {
-      print('Frames directory does not exist.');
-      return;
-    }
-
-    final frames = extractedFramesDirectory.listSync();
-
-    for (final frame in frames) {
-      if (frame is File) {
-        try {
-          final frameBytes = await frame.readAsBytes();
-          yield Uint8List.fromList(frameBytes);
-        } catch (e) {
-          print('Error reading frame file: $e');
-        }
-      }
-    }
-  }
-
-  Future<void> extractFrames(String videoPath) async {
-    final FlutterFFmpeg _flutterFFmpeg = FlutterFFmpeg();
-    final framesDirectory = await getTemporaryDirectory();
-    final extractedFramesDirectory = Directory('${framesDirectory.path}/extracted_frames');
-
-    extractedFramesDirectory.createSync();
-
-    final outputPattern = '${extractedFramesDirectory.path}/frame%04d.jpg';
-
-    final arguments = '-i $videoPath -vf fps=30 $outputPattern';
-
-    final rc = await _flutterFFmpeg.execute(arguments);
-
-    if (rc == 0) {
-      // Frames have been extracted successfully
-      print('Frames have been extracted successfully.');
-    } else {
-      // Error during frame extraction
-      print('Error during frame extraction: $rc');
-    }
-  }
-
-
-
-  Future<void> processVideo() async {
-    final videoPath = widget.filePath;
-
-    await extractFrames(videoPath);
-    final frameStream = getVideoFrameStream(videoPath);
-    final faces = <Face>[]; // Initialize the list to store faces
-    final videoWidth = _videoPlayerController.value.size.width;
-    final videoHeight = _videoPlayerController.value.size.height;
-    await for (final frameBytes in frameStream) {
-      final inputImage = InputImage.fromBytes(
-        bytes: frameBytes,
-        metadata: InputImageMetadata(
-          size: Size(videoWidth, videoHeight), // Set the actual size of the frame
-          format: InputImageFormat.nv21, // Set the format based on your frame's format
-          rotation: InputImageRotation.rotation0deg, // Set the rotation based on your frame's rotation
-          bytesPerRow: videoWidth.toInt(), // Set the bytes per row based on your frame's bytes per row
-        ),
-      );
-
-      final detectedFaces = await widget.faceDetector.processImage(inputImage);
-      faces.addAll(detectedFaces);
-    }
-
-    // Now you have all the faces detected in the video frames
-    for (final face in faces) {
-      final leftEyeLandmark = face.landmarks[FaceLandmarkType.leftEye];
-      final rightEyeLandmark = face.landmarks[FaceLandmarkType.rightEye];
-
-      if (leftEyeLandmark != null && rightEyeLandmark != null) {
-        final leftEyeX = leftEyeLandmark.position.x;
-        final leftEyeY = leftEyeLandmark.position.y;
-        final rightEyeX = rightEyeLandmark.position.x;
-        final rightEyeY = rightEyeLandmark.position.y;
-
-        // Now you have the coordinates of the left and right eyes for each frame
-        print("Left Eye X: $leftEyeX, Left Eye Y: $leftEyeY");
-        print("Right Eye X: $rightEyeX, Right Eye Y: $rightEyeY");
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -224,7 +207,7 @@ class _VideoPageState extends State<VideoPage> {
                     Container(
                       height: 50,
                       width: 50,
-                      decoration: BoxDecoration(
+                      decoration:const BoxDecoration(
                           shape: BoxShape.circle,
                           color: Colors.blueAccent
                       ),
@@ -237,11 +220,27 @@ class _VideoPageState extends State<VideoPage> {
                           }, icon:const Icon(Icons.download ,color: Colors.white,)),
                     ),
                     const SizedBox(width: 10,),
-
-
-
                   ],
                 ) ,
+
+                SizedBox(
+                  width: MediaQuery.of(context).size.width*0.9,
+                  child: ElevatedButton(
+                      onPressed: () async{
+
+                        exportFile();
+
+
+                      },
+                      style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(horizontal: 20,vertical: 15), // Button padding
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.0), // Button border radius
+                          ),
+                          primary: Colors.blueAccent),
+
+                      child: Text("landMarkData",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w500),)),
+                ),
                 const SizedBox(height: 40,),
                 SizedBox(
                   width: MediaQuery.of(context).size.width*0.9,

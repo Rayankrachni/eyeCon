@@ -31,7 +31,7 @@ class _FaceDetectorViewState extends State<FaceDetectorView> with WidgetsBinding
       enableLandmarks: true,
     ),
   );
-
+  Timer? _landmarkTimer;
   bool _canProcess = true;
   bool _isBusy = false;
 
@@ -55,7 +55,8 @@ class _FaceDetectorViewState extends State<FaceDetectorView> with WidgetsBinding
   @override
   void dispose() {
     _canProcess = false;
-
+    _stopLandmarkTimer();
+    _faceDetector.close();
 
     _faceDetector.close();
     WidgetsBinding.instance.removeObserver(this);
@@ -134,49 +135,21 @@ class _FaceDetectorViewState extends State<FaceDetectorView> with WidgetsBinding
       if(forground) ToastHelper.showToast(msg: "Fix Your Position", backgroundColor: Colors.green);
       facesInTargetArea.add(face);
 
-      if( Provider.of<RecordingProvider>(context,listen: false).startRecording==true){
-
-        print("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
-        // Access landmarks for the left and right eyes
-        final leftEyeLandmark = face.landmarks[FaceLandmarkType.leftEye];
-        final rightEyeLandmark = face.landmarks[FaceLandmarkType.rightEye];
+    if(Provider.of<RecordingProvider>(context,listen: false).startRecording == true){
+        _startLandmarkTimer(face);
+      }
 
 
-
-        if (leftEyeLandmark != null && rightEyeLandmark != null) {
-          final leftEyeX = leftEyeLandmark.position.x;
-          final leftEyeY = leftEyeLandmark.position.y;
-          final rightEyeX = rightEyeLandmark.position.x;
-          final rightEyeY = rightEyeLandmark.position.y;
-
-          // Now you have the coordinates of the left and right eyes
-          print("Left Eye X: $leftEyeX, Left Eye Y: $leftEyeY");
-          print("Right Eye X: $rightEyeX, Right Eye Y: $rightEyeY");
-
-
-
-          Provider.of<UserProvider>(context, listen: false).addLandmark({
-            'left': "leftEye",
-            'XLeftEye': leftEyeX,
-            'YLeftEye': leftEyeY,
-            'right': "righttEye",
-            'XRightEye': rightEyeX,
-            'YRightEye': rightEyeY,
-          });
-          final list= Provider.of<UserProvider>(context, listen: false).allLandmarks;
-          print("Landmarks added in ClassA: ${list}");
-
-
-
-
-        }
+      if(Provider.of<RecordingProvider>(context, listen: false).startRecording == false){
+        _stopLandmarkTimer();
       }
 
 
 
-       
 
-        }
+
+
+    }
     else{
 
       print("1111111111111111111111");
@@ -184,6 +157,7 @@ class _FaceDetectorViewState extends State<FaceDetectorView> with WidgetsBinding
       facesInTargetArea=[];   
       // ignore: use_build_context_synchronously
       Provider.of<RecordingProvider>(context,listen: false).startRecording=false;
+      //_stopLandmarkTimer();
       // ignore: use_build_context_synchronously
       Provider.of<RecordingProvider>(context,listen: false).stopRecord=true;
       if(!face_out &&  forground)ToastHelper.showToast(msg: "Focus your eyes inside the box and wait a few seconds",backgroundColor: Colors.red);
@@ -228,8 +202,62 @@ class _FaceDetectorViewState extends State<FaceDetectorView> with WidgetsBinding
      
     }
   }
+  int _elapsedSeconds = 0;
+
+  void _startLandmarkTimer(Face face) {
+    if (_landmarkTimer != null && _landmarkTimer!.isActive) return; // Avoid starting another timer if one is active
+
+    _elapsedSeconds = 0; // Reset the elapsed time
+
+    _landmarkTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (_elapsedSeconds >= 30) {
+        _stopLandmarkTimer();
+        return;
+      }
+
+      final leftEyeLandmark = face.landmarks[FaceLandmarkType.leftEye];
+      final rightEyeLandmark = face.landmarks[FaceLandmarkType.rightEye];
+
+      if (leftEyeLandmark != null && rightEyeLandmark != null) {
+        final leftEyeX = leftEyeLandmark.position.x;
+        final leftEyeY = leftEyeLandmark.position.y;
+        final rightEyeX = rightEyeLandmark.position.x;
+        final rightEyeY = rightEyeLandmark.position.y;
+
+        print("Left Eye X: $leftEyeX, Left Eye Y: $leftEyeY");
+        print("Right Eye X: $rightEyeX, Right Eye Y: $rightEyeY");
+
+        Provider.of<UserProvider>(context, listen: false).addLandmark({
+          'left': "leftEye",
+          'XLeftEye': leftEyeX,
+          'YLeftEye': leftEyeY,
+          'right': "rightEye",
+          'XRightEye': rightEyeX,
+          'YRightEye': rightEyeY,
+        });
+
+        _elapsedSeconds++; // Increment the elapsed time
+      }
+      else{
+        Provider.of<UserProvider>(context, listen: false).addLandmark({
+          'left': "leftEye",
+          'XLeftEye': '',
+          'YLeftEye': '',
+          'right': "rightEye",
+          'XRightEye': '',
+          'YRightEye': '',
+        });
+        _elapsedSeconds++; // Increment the elapsed time
+      }
+    });
+  }
 
 
+  void _stopLandmarkTimer() {
+    if (_landmarkTimer != null && _landmarkTimer!.isActive) {
+      _landmarkTimer!.cancel();
+    }
+  }
 
 
 }

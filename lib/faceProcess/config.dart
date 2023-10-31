@@ -1,0 +1,1 @@
+const apiUrl = 'http://dev.vis-oko.mk/api/';
