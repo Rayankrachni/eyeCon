@@ -145,7 +145,7 @@ class _CameraViewState extends State<CameraView> {
   @override
   Widget build(BuildContext context) {
     final RecordingProvider recordingProvider = context.read<RecordingProvider>();
-    return Scaffold(body: _liveFeedBody(recordingProvider));
+    return SafeArea(child: Scaffold(body: _liveFeedBody(recordingProvider)));
   }
 
   int totalDuration=0;
@@ -300,7 +300,7 @@ class _CameraViewState extends State<CameraView> {
                     child: Align(
                       alignment: Alignment.topCenter,
                       child: Text(
-                        "Recording Time: ${formatDuration(secondsPassed)}/ ${provide.items[0].duration!*provide.items.length} second",
+                        "Recording Time: ${formatDuration(secondsPassed)}/ 00:${provide.items[0].duration!*provide.items.length}",
                         style: TextStyle(
                             color: Colors.white,
                             fontSize: 18,

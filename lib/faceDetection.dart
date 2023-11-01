@@ -13,16 +13,12 @@ import 'package:provider/provider.dart';
 
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 
-
-
-
 class FaceDetectorView extends StatefulWidget {
   const FaceDetectorView({Key? key}) : super(key: key);
 
   @override
   _FaceDetectorViewState createState() => _FaceDetectorViewState();
 }
-
 
 class _FaceDetectorViewState extends State<FaceDetectorView> with WidgetsBindingObserver {
   final FaceDetector _faceDetector = FaceDetector(
@@ -36,18 +32,15 @@ class _FaceDetectorViewState extends State<FaceDetectorView> with WidgetsBinding
   bool _isBusy = false;
 
   CustomPaint? _customPaint;
-  
   String? _text;
 
-  bool face_out= false;
-
-  bool forground= true;
-
+  bool face_out = false;
+  bool forground = true;
   var _cameraLensDirection = CameraLensDirection.front;
+  List<List<Map<String, dynamic>>> landmarksList = [];
 
   @override
   void initState() {
-   
     super.initState();
     WidgetsBinding.instance.addObserver(this);
   }
@@ -57,32 +50,27 @@ class _FaceDetectorViewState extends State<FaceDetectorView> with WidgetsBinding
     _canProcess = false;
     _stopLandmarkTimer();
     _faceDetector.close();
-
     _faceDetector.close();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
-  
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       setState(() {
-        forground=true;
+        forground = true;
       });
     } else if (state == AppLifecycleState.paused) {
-
       setState(() {
-        forground=false;
+        forground = false;
       });
-      Fluttertoast.cancel(); // Hide any existing toast when the app goes into the background
+      Fluttertoast.cancel();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-
-    
     return DetectorView(
       title: 'Face Detector',
       customPaint: _customPaint,
@@ -100,95 +88,64 @@ class _FaceDetectorViewState extends State<FaceDetectorView> with WidgetsBinding
     setState(() {
       _text = '';
     });
-    
-       
+
     final bool startDetection = Provider.of<RecordingProvider>(context, listen: false).eyesinbox;
     final faces = await _faceDetector.processImage(inputImage);
 
+    const double targetX = -5;
+    const double targetY = 200;
+    const double targetWidth = 2000;
+    const double targetHeight = 600;
+    List<Face> facesInTargetArea = [];
 
-  // Define the position and dimensions of the area where you want to detect faces
-  const double targetX = -5; // Define your desired x position
-  const double targetY = 200; // Define your desired y position
-  const double targetWidth = 2000; // Define your desired width
-  const double targetHeight = 600; // Define your desired height
-  
-  List<Face> facesInTargetArea = [];
+    for (final face in faces) {
+      final boundingBox = face.boundingBox;
+      final x = boundingBox.left;
+      final y = boundingBox.top;
+      final width = boundingBox.width;
+      final height = boundingBox.height;
 
-  for (final face in faces) {
-    final boundingBox = face.boundingBox;
-    final x = boundingBox.left;
-    final y = boundingBox.top;
-    final width = boundingBox.width;
-    final height = boundingBox.height;
-  
-    // Check if the detected face is within the target area
-    if (x >= targetX &&  y >= 120 &&  y <= targetY  && x + width <= targetX + targetWidth && y + height <= targetY + targetHeight) {
-      
-      // ignore: use_build_context_synchronously
-      Provider.of<RecordingProvider>(context,listen: false).stopRecord=false;
+      if (x >= targetX && y >= 120 && y <= targetY && x + width <= targetX + targetWidth && y + height <= targetY + targetHeight) {
+        Provider.of<RecordingProvider>(context, listen: false).stopRecord = false;
+        setState(() {
+          face_out = true;
+        });
 
-      setState(() {
-        face_out=true;
-      });
-      
+        if (forground) ToastHelper.showToast(msg: "Fix Your Position", backgroundColor: Colors.green);
+        facesInTargetArea.add(face);
 
-      if(forground) ToastHelper.showToast(msg: "Fix Your Position", backgroundColor: Colors.green);
-      facesInTargetArea.add(face);
-
-    if(Provider.of<RecordingProvider>(context,listen: false).startRecording == true){
-        _startLandmarkTimer(face);
+        if (startDetection && facesInTargetArea.isNotEmpty) {
+          if (Provider.of<RecordingProvider>(context, listen: false).startRecording == true) {
+            _startLandmarkTimer(face);
+          } else {
+            _stopLandmarkTimer();
+          }
+        } else {
+          _stopLandmarkTimer();
+        }
+      } else {
+        facesInTargetArea = [];
+        Provider.of<RecordingProvider>(context, listen: false).startRecording = false;
+        Provider.of<RecordingProvider>(context, listen: false).stopRecord = true;
+        if (!face_out && forground) ToastHelper.showToast(msg: "Focus your eyes inside the box and wait a few seconds", backgroundColor: Colors.red);
       }
-
-
-      if(Provider.of<RecordingProvider>(context, listen: false).startRecording == false){
-        _stopLandmarkTimer();
-      }
-
-
-
-
-
-
     }
-    else{
-
-      print("1111111111111111111111");
-      
-      facesInTargetArea=[];   
-      // ignore: use_build_context_synchronously
-      Provider.of<RecordingProvider>(context,listen: false).startRecording=false;
-      //_stopLandmarkTimer();
-      // ignore: use_build_context_synchronously
-      Provider.of<RecordingProvider>(context,listen: false).stopRecord=true;
-      if(!face_out &&  forground)ToastHelper.showToast(msg: "Focus your eyes inside the box and wait a few seconds",backgroundColor: Colors.red);
-     
-    
-    }
-
-     
-  }
 
     if (inputImage.metadata?.size != null &&
-        inputImage.metadata?.rotation != null&& startDetection &&facesInTargetArea.isNotEmpty)
-         {
+        inputImage.metadata?.rotation != null &&
+        startDetection &&
+        facesInTargetArea.isNotEmpty) {
+      final painter = FaceDetectorPainter(
+        faces,
+        inputImage.metadata!.size,
+        inputImage.metadata!.rotation,
+        _cameraLensDirection,
+        context,
+      );
 
-             
-            final painter = FaceDetectorPainter(
-              faces,
-              inputImage.metadata!.size,
-              inputImage.metadata!.rotation,
-              _cameraLensDirection,
-              context
-            );
-
-      
-    
       _customPaint = CustomPaint(painter: painter);
-
-      
-     
+      updateLandmarksList(faces);
     } else {
-      
       String text = 'Faces found: ${faces.length}\n\n';
       for (final face in faces) {
         text += 'face: ${face.boundingBox}\n\n';
@@ -197,26 +154,56 @@ class _FaceDetectorViewState extends State<FaceDetectorView> with WidgetsBinding
       _customPaint = null;
     }
     _isBusy = false;
-    if (mounted) {
-
-     
-    }
   }
+
+  void updateLandmarksList(List<Face> faces) {
+    final List<Map<String, dynamic>> landmarks = [];
+    for (final face in faces) {
+      final leftEyeLandmark = face.landmarks[FaceLandmarkType.leftEye];
+      final rightEyeLandmark = face.landmarks[FaceLandmarkType.rightEye];
+      if (leftEyeLandmark != null && rightEyeLandmark != null) {
+        final leftEyeX = leftEyeLandmark.position.x;
+        final leftEyeY = leftEyeLandmark.position.y;
+        final rightEyeX = rightEyeLandmark.position.x;
+        final rightEyeY = rightEyeLandmark.position.y;
+
+        landmarks.add({
+          'left': "leftEye",
+          'XLeftEye': leftEyeX,
+          'YLeftEye': leftEyeY,
+          'right': "rightEye",
+          'XRightEye': rightEyeX,
+          'YRightEye': rightEyeY,
+        });
+      } else {
+        landmarks.add({
+          'left': "leftEye",
+          'XLeftEye': '',
+          'YLeftEye': '',
+          'right': "rightEye",
+          'XRightEye': '',
+          'YRightEye': '',
+        });
+      }
+    }
+    landmarksList.add(landmarks);
+  }
+
   int _elapsedSeconds = 0;
 
   void _startLandmarkTimer(Face face) {
-    if (_landmarkTimer != null && _landmarkTimer!.isActive) return; // Avoid starting another timer if one is active
+    if (_landmarkTimer != null && _landmarkTimer!.isActive) return;
 
-    _elapsedSeconds = 0; // Reset the elapsed time
-
+    _elapsedSeconds = 0;
     _landmarkTimer = Timer.periodic(Duration(seconds: 1), (timer) {
       if (_elapsedSeconds >= 30) {
         _stopLandmarkTimer();
         return;
       }
 
-      final leftEyeLandmark = face.landmarks[FaceLandmarkType.leftEye];
-      final rightEyeLandmark = face.landmarks[FaceLandmarkType.rightEye];
+      final updatedFace = face; // Capture the current face data
+      final leftEyeLandmark = updatedFace.landmarks[FaceLandmarkType.leftEye];
+      final rightEyeLandmark = updatedFace.landmarks[FaceLandmarkType.rightEye];
 
       if (leftEyeLandmark != null && rightEyeLandmark != null) {
         final leftEyeX = leftEyeLandmark.position.x;
@@ -236,9 +223,8 @@ class _FaceDetectorViewState extends State<FaceDetectorView> with WidgetsBinding
           'YRightEye': rightEyeY,
         });
 
-        _elapsedSeconds++; // Increment the elapsed time
-      }
-      else{
+        _elapsedSeconds++;
+      } else {
         Provider.of<UserProvider>(context, listen: false).addLandmark({
           'left': "leftEye",
           'XLeftEye': '',
@@ -247,7 +233,7 @@ class _FaceDetectorViewState extends State<FaceDetectorView> with WidgetsBinding
           'XRightEye': '',
           'YRightEye': '',
         });
-        _elapsedSeconds++; // Increment the elapsed time
+        _elapsedSeconds++;
       }
     });
   }
@@ -258,6 +244,4 @@ class _FaceDetectorViewState extends State<FaceDetectorView> with WidgetsBinding
       _landmarkTimer!.cancel();
     }
   }
-
-
 }
